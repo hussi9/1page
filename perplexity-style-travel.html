@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="real-production-api.js"></script>
+  <!-- Self-contained - no external dependencies -->
   <style>
     * {
       margin: 0;
@@ -976,41 +976,131 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
 
     async function gatherTravelData(query) {
       try {
-        // First try to extract location from query
+        console.log(`🔍 Searching for: "${query}"`);
+        
+        // Extract location and coordinates
         const location = extractLocationFromQuery(query);
-        
-        // Try to get user's current location for better search
-        let searchCoords = null;
-        try {
-          const userLocation = await window.RealProductionTravelAPI.detectUserLocation();
-          searchCoords = userLocation.coordinates;
-        } catch (e) {
-          // Use default coordinates based on query location
-          searchCoords = getDefaultCoordinates(location || 'mumbai');
-        }
-        
-        // Search real APIs for live data
+        const searchCoords = getDefaultCoordinates(location || 'mumbai');
         const [lat, lng] = searchCoords;
-        const apiResults = await window.RealProductionTravelAPI.searchEnhancedPlaces(lat, lng, ['tourism', 'leisure'], 100000);
         
-        if (apiResults && apiResults.length > 0) {
-          return transformAPIResults(apiResults, query);
+        console.log(`📍 Search coordinates: ${lat}, ${lng} (${location || 'default'})`);
+        
+        // Try Geoapify Places API directly
+        const geoapifyResults = await searchGeoapifyDirect(lat, lng, query);
+        if (geoapifyResults.length > 0) {
+          console.log(`✅ Found ${geoapifyResults.length} results from Geoapify`);
+          return geoapifyResults;
         }
         
-        // If APIs fail, try MongoDB as fallback
-        if (location) {
-          const mongoResults = await window.RealProductionTravelAPI.getRealDestinations(location);
-          if (mongoResults && mongoResults.length > 0) {
-            return transformMongoResults(mongoResults);
-          }
+        // Fallback to OpenStreetMap 
+        const osmResults = await searchOpenStreetMapDirect(lat, lng, query);
+        if (osmResults.length > 0) {
+          console.log(`✅ Found ${osmResults.length} results from OpenStreetMap`);
+          return osmResults;
         }
         
-        // Last resort - generate contextual fallback data
+        // Final fallback - generate contextual results
+        console.log(`⚠️ Using fallback data for "${query}"`);
         return generateFallbackData(query, location);
         
       } catch (error) {
-        console.error('Data gathering failed:', error);
+        console.error('❌ Data gathering failed:', error);
         return generateFallbackData(query, null);
+      }
+    }
+    
+    // DIRECT GEOAPIFY API SEARCH
+    async function searchGeoapifyDirect(lat, lng, query) {
+      try {
+        const apiKey = '3bc64d2366df476b942c00221c34170e'; // Your provided key
+        const categories = getQueryCategories(query);
+        const radius = getQueryRadius(query);
+        
+        const url = `https://api.geoapify.com/v2/places?categories=${categories}&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=20&apiKey=${apiKey}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Geoapify API failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        return data.features.map(feature => {
+          const props = feature.properties;
+          const coords = feature.geometry.coordinates;
+          const distance = calculateDistance([lat, lng], [coords[1], coords[0]]);
+          
+          return {
+            name: props.name || 'Unknown Place',
+            description: props.description || generateDescription(props.categories?.[0], query),
+            distance: `${Math.round(distance)}km`,
+            cost: Math.round(distance * 15) + 400,
+            coordinates: [coords[1], coords[0]],
+            category: props.categories?.[0] || 'tourism',
+            rating: props.rating || (4.0 + Math.random()),
+            source: 'geoapify',
+            image: null // Geoapify doesn't provide images in free tier
+          };
+        }).slice(0, 8);
+        
+      } catch (error) {
+        console.error('Geoapify search failed:', error);
+        return [];
+      }
+    }
+    
+    // DIRECT OPENSTREETMAP SEARCH
+    async function searchOpenStreetMapDirect(lat, lng, query) {
+      try {
+        const radius = getQueryRadius(query);
+        const osmQuery = `
+          [out:json][timeout:20];
+          (
+            node["tourism"~"attraction|museum|viewpoint|picnic_site|zoo|theme_park|aquarium|artwork|gallery"](around:${radius},${lat},${lng});
+            node["leisure"~"park|nature_reserve|beach_resort|water_park|garden|golf_course|marina"](around:${radius},${lat},${lng});
+            node["natural"~"beach|peak|waterfall|hot_spring|cave_entrance|rock|cliff"](around:${radius},${lat},${lng});
+            node["historic"~"castle|fort|monument|ruins|archaeological_site"](around:${radius},${lat},${lng});
+            way["tourism"~"attraction|museum|viewpoint|zoo|theme_park"](around:${radius},${lat},${lng});
+            way["leisure"~"park|nature_reserve|water_park|garden"](around:${radius},${lat},${lng});
+            way["natural"~"beach|peak|waterfall"](around:${radius},${lat},${lng});
+          );
+          out center meta;
+        `;
+        
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `data=${encodeURIComponent(osmQuery)}`
+        });
+        
+        if (!response.ok) {
+          throw new Error(`OpenStreetMap API failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        return data.elements.map(element => {
+          const elementLat = element.lat || element.center?.lat;
+          const elementLon = element.lon || element.center?.lon;
+          const distance = calculateDistance([lat, lng], [elementLat, elementLon]);
+          
+          return {
+            name: element.tags?.name || 'Unnamed Place',
+            description: element.tags?.description || generateDescription(element.tags?.tourism || element.tags?.leisure, query),
+            distance: `${Math.round(distance)}km`,
+            cost: Math.round(distance * 12) + 300,
+            coordinates: [elementLat, elementLon],
+            category: element.tags?.tourism || element.tags?.leisure || 'place',
+            rating: 4.0 + Math.random() * 0.8,
+            source: 'openstreetmap'
+          };
+        }).filter(place => place.coordinates[0] && place.coordinates[1])
+          .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+          .slice(0, 10);
+        
+      } catch (error) {
+        console.error('OpenStreetMap search failed:', error);
+        return [];
       }
     }
 
@@ -1092,12 +1182,98 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
       }));
     }
     
+    // HELPER FUNCTIONS FOR API SEARCHES
+    function getQueryCategories(query) {
+      const lowerQuery = query.toLowerCase();
+      
+      if (lowerQuery.includes('temple') || lowerQuery.includes('church') || lowerQuery.includes('mosque')) {
+        return 'religion';
+      }
+      if (lowerQuery.includes('museum') || lowerQuery.includes('gallery') || lowerQuery.includes('art')) {
+        return 'entertainment';
+      }
+      if (lowerQuery.includes('park') || lowerQuery.includes('garden') || lowerQuery.includes('nature')) {
+        return 'leisure';
+      }
+      if (lowerQuery.includes('beach') || lowerQuery.includes('hill') || lowerQuery.includes('mountain')) {
+        return 'natural';
+      }
+      if (lowerQuery.includes('fort') || lowerQuery.includes('palace') || lowerQuery.includes('monument')) {
+        return 'tourism.sights';
+      }
+      
+      return 'tourism'; // Default category
+    }
+    
+    function getQueryRadius(query) {
+      const lowerQuery = query.toLowerCase();
+      
+      if (lowerQuery.includes('nearby') || lowerQuery.includes('close')) {
+        return 25000; // 25km
+      }
+      if (lowerQuery.includes('weekend') || lowerQuery.includes('day trip')) {
+        return 150000; // 150km
+      }
+      if (lowerQuery.includes('state') || lowerQuery.includes('region')) {
+        return 300000; // 300km
+      }
+      
+      return 100000; // Default 100km
+    }
+    
+    function generateDescription(category, query) {
+      const descriptions = {
+        'tourism': 'Popular tourist attraction',
+        'leisure': 'Relaxing recreational spot',
+        'entertainment': 'Cultural and entertainment venue',
+        'religion': 'Sacred religious site',
+        'natural': 'Beautiful natural landmark',
+        'attraction': 'Must-visit destination',
+        'museum': 'Educational and cultural museum',
+        'park': 'Scenic park and recreation area',
+        'monument': 'Historic monument and landmark'
+      };
+      
+      return descriptions[category] || 'Interesting place to visit';
+    }
+    
+    function calculateDistance(coord1, coord2) {
+      const R = 6371; // Earth's radius in km
+      const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+      const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+    
     function generateFallbackData(query, location) {
       const queryTypes = {
-        beach: ['Marina Beach', 'Juhu Beach', 'Calangute Beach', 'Varkala Beach'],
-        hill: ['Ooty', 'Munnar', 'Shimla', 'Mussoorie'],
-        temple: ['Meenakshi Temple', 'Golden Temple', 'Jagannath Temple', 'Somnath Temple'],
-        fort: ['Red Fort', 'Amer Fort', 'Golconda Fort', 'Chittorgarh Fort']
+        beach: [
+          { name: 'Marina Beach', desc: 'Famous beach in Chennai' },
+          { name: 'Juhu Beach', desc: 'Popular Mumbai beach' },
+          { name: 'Calangute Beach', desc: 'Goa\'s most famous beach' },
+          { name: 'Varkala Beach', desc: 'Kerala\'s cliff-top beach' }
+        ],
+        hill: [
+          { name: 'Ooty', desc: 'Queen of Hill Stations' },
+          { name: 'Munnar', desc: 'Tea garden paradise' },
+          { name: 'Shimla', desc: 'Colonial hill station' },
+          { name: 'Mussoorie', desc: 'Queen of the Hills' }
+        ],
+        temple: [
+          { name: 'Meenakshi Temple', desc: 'Ancient temple in Madurai' },
+          { name: 'Golden Temple', desc: 'Sacred Sikh shrine' },
+          { name: 'Jagannath Temple', desc: 'Famous Puri temple' },
+          { name: 'Somnath Temple', desc: 'Jyotirlinga temple' }
+        ],
+        fort: [
+          { name: 'Red Fort', desc: 'Historic Mughal fort' },
+          { name: 'Amer Fort', desc: 'Rajasthani architecture' },
+          { name: 'Golconda Fort', desc: 'Medieval fort complex' },
+          { name: 'Chittorgarh Fort', desc: 'Largest fort in India' }
+        ]
       };
       
       const lowerQuery = query.toLowerCase();
@@ -1111,14 +1287,26 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
       }
       
       if (suggestions.length === 0) {
-        suggestions = ['Popular destination 1', 'Popular destination 2', 'Popular destination 3'];
+        // Location-based fallback
+        const locationData = {
+          'kerala': [{ name: 'Backwaters', desc: 'Serene waterways' }, { name: 'Hill Stations', desc: 'Misty mountains' }],
+          'goa': [{ name: 'Beaches', desc: 'Golden sandy beaches' }, { name: 'Churches', desc: 'Portuguese architecture' }],
+          'rajasthan': [{ name: 'Palaces', desc: 'Royal heritage' }, { name: 'Desert', desc: 'Thar desert experience' }]
+        };
+        
+        suggestions = locationData[location] || [
+          { name: 'Popular Destination 1', desc: 'Great place to visit' },
+          { name: 'Popular Destination 2', desc: 'Amazing travel spot' },
+          { name: 'Popular Destination 3', desc: 'Must-see location' }
+        ];
       }
       
-      return suggestions.slice(0, 6).map((name, index) => ({
-        name,
-        description: `Beautiful ${location || 'travel'} destination perfect for your trip`,
-        distance: `${50 + index * 20}km`,
-        cost: 500 + index * 200,
+      return suggestions.slice(0, 6).map((item, index) => ({
+        name: item.name,
+        description: item.desc,
+        distance: `${50 + index * 25}km`,
+        cost: 500 + index * 300,
+        rating: 4.0 + Math.random() * 0.8,
         source: 'curated'
       }));
     }
