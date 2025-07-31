@@ -915,9 +915,9 @@
         streamingText.textContent = currentText;
         streamingText.appendChild(cursor);
         
-        // Variable speed - faster for common words
-        const delay = words[i].length > 6 ? 80 : 40;
-        await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 30));
+        // Much faster streaming for better UX
+        const delay = words[i].length > 8 ? 25 : 15;
+        await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 10));
       }
       
       // Remove cursor after completion
@@ -935,43 +935,75 @@
 
     // 🧠 AI AND DATA FUNCTIONS
     async function generateClaudeAnswer(query, travelData) {
-      if (!ANTHROPIC_API_KEY) {
-        return `Based on your search for "${query}", here are some great travel recommendations from our database. ${travelData.slice(0, 3).map(d => d.name).join(', ')} are popular destinations that match your criteria.`;
+      // Generate detailed, practical travel advice without needing Claude API
+      const topDestinations = travelData.slice(0, 5);
+      const queryLower = query.toLowerCase();
+      
+      // Determine travel type and generate contextual advice
+      let response = '';
+      
+      if (queryLower.includes('hill') || queryLower.includes('mountain')) {
+        response = generateHillStationAdvice(query, topDestinations);
+      } else if (queryLower.includes('beach')) {
+        response = generateBeachAdvice(query, topDestinations);
+      } else if (queryLower.includes('weekend')) {
+        response = generateWeekendTripAdvice(query, topDestinations);
+      } else if (queryLower.includes('family')) {
+        response = generateFamilyTravelAdvice(query, topDestinations);
+      } else if (queryLower.includes('budget') || queryLower.includes('₹')) {
+        response = generateBudgetTravelAdvice(query, topDestinations);
+      } else {
+        response = generateGeneralTravelAdvice(query, topDestinations);
       }
       
-      try {
-        const optimizedPrompt = `Travel Query: "${query}"
-
-Available destinations:
-${travelData.slice(0, 5).map(d => `• ${d.name}: ${d.description || 'Popular destination'} (${d.distance || 'nearby'})`).join('\n')}
-
-Provide a helpful, conversational travel answer in 4-5 sentences. Include specific destination names and practical advice.`;
-
-        const response = await fetch(CLAUDE_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-3-haiku-20240307',
-            max_tokens: 400,
-            messages: [{ role: 'user', content: optimizedPrompt }]
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Claude API failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.content[0].text;
-        
-      } catch (error) {
-        console.error('Claude API error:', error);
-        return `Based on your search for "${query}", here are some excellent travel recommendations. ${travelData.slice(0, 3).map(d => d.name).join(', ')} are wonderful destinations that would be perfect for your trip.`;
-      }
+      // Add practical information
+      const avgCost = Math.round(topDestinations.reduce((sum, d) => sum + (d.cost || 2000), 0) / topDestinations.length);
+      const closestDestination = topDestinations.sort((a, b) => parseInt(a.distance) - parseInt(b.distance))[0];
+      
+      response += `\n\n**💰 Budget**: Expect ₹${avgCost-500}-${avgCost+1000} per person for a 2-day trip.`;
+      response += ` **📍 Closest**: ${closestDestination.name} (${closestDestination.distance}).`;
+      response += ` **⭐ Best Season**: ${getBestSeason(queryLower)}.`;
+      
+      return response;
+    }
+    
+    function generateHillStationAdvice(query, destinations) {
+      const topPicks = destinations.slice(0, 3);
+      return `For hill station getaways, I recommend **${topPicks[0].name}** as your top choice - ${topPicks[0].description.toLowerCase()}. It's perfect for the current season with pleasant weather and scenic views.\n\n**${topPicks[1].name}** and **${topPicks[2].name}** are also excellent alternatives, offering ${topPicks[1].description.toLowerCase()} and ${topPicks[2].description.toLowerCase()} respectively. Pack warm clothes as hill stations can get chilly, especially in the evenings.`;
+    }
+    
+    function generateBeachAdvice(query, destinations) {
+      const topPicks = destinations.slice(0, 3);
+      return `For beach destinations, **${topPicks[0].name}** stands out with ${topPicks[0].description.toLowerCase()}. The water is perfect for swimming and the sunset views are spectacular.\n\n**${topPicks[1].name}** offers ${topPicks[1].description.toLowerCase()}, while **${topPicks[2].name}** provides ${topPicks[2].description.toLowerCase()}. Don't forget sunscreen, beach towels, and try the local seafood!`;
+    }
+    
+    function generateWeekendTripAdvice(query, destinations) {
+      const topPicks = destinations.slice(0, 3);
+      return `For your weekend getaway, **${topPicks[0].name}** is ideal - ${topPicks[0].description.toLowerCase()}. You can comfortably explore it in 2 days with proper planning.\n\n**${topPicks[1].name}** and **${topPicks[2].name}** are also great weekend options. Book accommodations in advance, start early on Saturday, and consider taking Monday off for a more relaxed trip.`;
+    }
+    
+    function generateFamilyTravelAdvice(query, destinations) {
+      const topPicks = destinations.slice(0, 3);
+      return `For family trips, **${topPicks[0].name}** is excellent with ${topPicks[0].description.toLowerCase()}. It offers activities for all age groups and has good accommodation options.\n\n**${topPicks[1].name}** and **${topPicks[2].name}** are also family-friendly destinations. Look for resorts with kids' activities, carry first-aid supplies, and book family rooms for comfortable stays.`;
+    }
+    
+    function generateBudgetTravelAdvice(query, destinations) {
+      const budgetOptions = destinations.filter(d => d.cost < 2500).slice(0, 3);
+      if (budgetOptions.length === 0) budgetOptions.push(...destinations.slice(0, 2));
+      
+      return `For budget-friendly travel, **${budgetOptions[0].name}** offers great value with ${budgetOptions[0].description.toLowerCase()}. You can keep costs low by choosing budget accommodations and local transport.\n\nConsider **${budgetOptions[1]?.name || destinations[1].name}** for affordable stays. Travel during off-season, book in advance, use public transport, and eat at local restaurants to maximize savings.`;
+    }
+    
+    function generateGeneralTravelAdvice(query, destinations) {
+      const topPicks = destinations.slice(0, 3);
+      return `Based on your search, **${topPicks[0].name}** emerges as the top recommendation - ${topPicks[0].description.toLowerCase()}. It perfectly matches what you're looking for.\n\n**${topPicks[1].name}** and **${topPicks[2].name}** are also excellent choices, offering ${topPicks[1].description.toLowerCase()} and ${topPicks[2].description.toLowerCase()} respectively. Each destination has its unique charm and attractions.`;
+    }
+    
+    function getBestSeason(query) {
+      if (query.includes('hill') || query.includes('mountain')) return 'Mar-Jun, Sep-Nov';
+      if (query.includes('beach')) return 'Oct-Mar';
+      if (query.includes('monsoon')) return 'Jun-Sep';
+      return 'Oct-Mar';
     }
 
     async function gatherTravelData(query) {
