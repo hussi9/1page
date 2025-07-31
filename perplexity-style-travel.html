@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelAI • Real Perplexity Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="real-production-api.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #fafbfc;
+      --bg-secondary: #ffffff;
+      --surface: #ffffff;
+      --text-primary: #0d1421;
+      --text-secondary: #586069;
+      --text-tertiary: #8b949e;
+      --accent: #0969da;
+      --accent-light: #54aeff;
+      --border: #d0d7de;
+      --border-light: #f6f8fa;
+      --success: #1a7f37;
+      --warning: #d1242f;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --radius: 8px;
+      --radius-large: 12px;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --surface: #21262d;
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b949e;
+      --text-tertiary: #656d76;
+      --border: #30363d;
+      --border-light: #21262d;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      z-index: 1000;
+    }
+
+    .header-content {
+      max-width: 768px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .cost-indicator {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.375rem 0.875rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .theme-toggle {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.375rem 0.875rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 768px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* Search Interface - Exact Perplexity Style */
+    .search-section {
+      text-align: center;
+      margin-bottom: 3rem;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-section.compact {
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+
+    .main-title {
+      font-size: 2.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-section.compact .main-title {
+      font-size: 1.5rem;
+      margin-bottom: 0;
+    }
+
+    .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      font-weight: 400;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-section.compact .subtitle {
+      display: none;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1.125rem 3.5rem 1.125rem 1.25rem;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow);
+      font-weight: 400;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(9, 105, 218, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .search-button {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      border: none;
+      border-radius: 18px;
+      padding: 0.625rem 1.25rem;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(9, 105, 218, 0.2);
+    }
+
+    .search-button:hover {
+      background: var(--accent-light);
+      transform: translateY(-50%) translateY(-1px);
+      box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+    }
+
+    .search-button:active {
+      transform: translateY(-50%) translateY(0);
+    }
+
+    .search-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: translateY(-50%);
+    }
+
+    /* Example Queries */
+    .example-queries {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      opacity: 1;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-section.compact .example-queries {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .example-query {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .example-query:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    /* Progressive Loading States - Like Perplexity */
+    .search-progress {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .search-progress.show {
+      display: block;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-large);
+      margin-bottom: 0.75rem;
+      opacity: 0.5;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+      opacity: 1;
+      border-color: var(--accent);
+      background: rgba(9, 105, 218, 0.02);
+    }
+
+    .progress-step.completed {
+      opacity: 0.7;
+      border-color: var(--success);
+      background: rgba(26, 127, 55, 0.02);
+    }
+
+    .progress-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .progress-step .progress-icon {
+      background: var(--border);
+      color: var(--text-tertiary);
+    }
+
+    .progress-step.active .progress-icon {
+      background: var(--accent);
+      color: white;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .progress-step.completed .progress-icon {
+      background: var(--success);
+      color: white;
+    }
+
+    .progress-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .progress-step.active .progress-text {
+      color: var(--text-primary);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Sources Loading - Progressive like Perplexity */
+    .sources-preview {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .sources-preview.show {
+      display: block;
+    }
+
+    .sources-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .source-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.4s ease forwards;
+    }
+
+    .source-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .source-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .source-favicon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .source-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .source-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Answer Section with Streaming Text */
+    .answer-section {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .answer-section.show {
+      display: block;
+    }
+
+    .answer-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .answer-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .answer-info {
+      flex: 1;
+    }
+
+    .answer-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .answer-meta {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    .answer-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-large);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .streaming-text {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Sources Section */
+    .sources-section {
+      display: none;
+    }
+
+    .sources-section.show {
+      display: block;
+    }
+
+    .sources-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .source-item {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.875rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .source-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .source-number {
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      color: white;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .source-content {
+      flex: 1;
+    }
+
+    .source-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.125rem;
+    }
+
+    .source-url {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+
+      .header {
+        padding: 1rem;
+      }
+
+      .main-title {
+        font-size: 2.25rem;
+      }
+
+      .sources-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-controls {
+        gap: 0.5rem;
+      }
+
+      .cost-indicator, .theme-toggle {
+        font-size: 0.6875rem;
+        padding: 0.25rem 0.625rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="#" class="logo">
+        <div class="logo-icon">AI</div>
+        TravelAI
+      </a>
+      <div class="header-controls">
+        <div class="cost-indicator" id="costIndicator">Cache: 0 | API: 0</div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Search Interface -->
+    <div class="search-section" id="searchSection">
+      <h1 class="main-title">Where would you like to explore?</h1>
+      <p class="subtitle">Ask me anything about travel destinations, activities, or trip planning</p>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="searchInput"
+          placeholder="e.g., Best hill stations near Mumbai for a weekend trip"
+          onkeypress="handleKeyPress(event)"
+        >
+        <button class="search-button" id="searchButton" onclick="performSearch()">
+          Search
+        </button>
+      </div>
+
+      <div class="example-queries">
+        <div class="example-query" onclick="useExampleQuery(this)">Best beaches in South India</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Weekend trips from Delhi under ₹5000</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Hill stations for monsoon travel</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Family places in Kerala</div>
+      </div>
+    </div>
+
+    <!-- Progressive Loading Steps -->
+    <div class="search-progress" id="searchProgress">
+      <div class="progress-step" id="step1">
+        <div class="progress-icon">1</div>
+        <div class="progress-text">Searching travel databases...</div>
+      </div>
+      <div class="progress-step" id="step2">
+        <div class="progress-icon">2</div>
+        <div class="progress-text">Finding relevant destinations...</div>
+      </div>
+      <div class="progress-step" id="step3">
+        <div class="progress-icon">3</div>
+        <div class="progress-text">Analyzing travel data...</div>
+      </div>
+      <div class="progress-step" id="step4">
+        <div class="progress-icon">4</div>
+        <div class="progress-text">Generating personalized recommendations...</div>
+      </div>
+    </div>
+
+    <!-- Sources Preview (loads progressively) -->
+    <div class="sources-preview" id="sourcesPreview">
+      <div class="sources-header">Sources</div>
+      <div class="sources-grid" id="sourcesGrid">
+        <!-- Sources will load here progressively -->
+      </div>
+    </div>
+
+    <!-- Answer Section with Streaming Text -->
+    <div class="answer-section" id="answerSection">
+      <div class="answer-header">
+        <div class="answer-avatar">AI</div>
+        <div class="answer-info">
+          <div class="answer-title">Travel Recommendations</div>
+          <div class="answer-meta" id="answerMeta">Generated with Claude AI</div>
+        </div>
+      </div>
+      
+      <div class="answer-content">
+        <div class="streaming-text" id="streamingText"></div>
+      </div>
+    </div>
+
+    <!-- Final Sources Section -->
+    <div class="sources-section" id="sourcesSection">
+      <div class="sources-title">Sources</div>
+      <div class="sources-list" id="sourcesList">
+        <!-- Final sources will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🎭 REAL PERPLEXITY-STYLE STREAMING INTERFACE
+    
+    // API Configuration
+    const ANTHROPIC_API_KEY = localStorage.getItem('ANTHROPIC_API_KEY') || 
+      prompt('Enter your Claude API key for AI answers:');
+    const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+    
+    if (ANTHROPIC_API_KEY && !localStorage.getItem('ANTHROPIC_API_KEY')) {
+      localStorage.setItem('ANTHROPIC_API_KEY', ANTHROPIC_API_KEY);
+    }
+    
+    // Cost tracking
+    let dailyApiCalls = parseInt(localStorage.getItem('dailyApiCalls') || '0');
+    let dailyCacheHits = parseInt(localStorage.getItem('dailyCacheHits') || '0');
+    
+    // State
+    let currentQuery = '';
+    let isSearching = false;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🎭 Perplexity-style TravelAI initialized');
+      document.getElementById('searchInput').focus();
+      updateCostDisplay();
+    });
+
+    // 🔍 MAIN SEARCH FUNCTION WITH PROGRESSIVE UI
+    async function performSearch() {
+      if (isSearching) return;
+      
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) return;
+
+      currentQuery = query;
+      isSearching = true;
+      
+      // Transform UI to compact mode
+      transformToCompactMode();
+      
+      try {
+        // Step 1: Start progressive loading
+        startProgressiveSearch();
+        
+        // Step 2: Check cache first
+        await simulateStep(1, 'Checking cached responses...');
+        const cachedAnswer = await checkCache(query);
+        
+        if (cachedAnswer) {
+          await simulateStep(2, 'Found cached response!');
+          await simulateStep(3, 'Preparing answer...');
+          await simulateStep(4, 'Ready to display!');
+          
+          displayCachedResponse(cachedAnswer);
+          dailyCacheHits++;
+          localStorage.setItem('dailyCacheHits', dailyCacheHits.toString());
+          updateCostDisplay();
+          return;
+        }
+        
+        // Step 3: Gather travel data
+        await simulateStep(2, 'Gathering fresh travel data...');
+        const travelData = await gatherTravelData(query);
+        
+        // Step 4: Show sources progressively
+        await simulateStep(3, 'Found ' + travelData.length + ' relevant sources...');
+        await showSourcesProgressively(travelData);
+        
+        // Step 5: Generate AI answer
+        await simulateStep(4, 'Generating AI response...');
+        const aiAnswer = await generateClaudeAnswer(query, travelData);
+        
+        // Step 6: Stream the answer
+        await streamAnswer(aiAnswer);
+        
+        // Step 7: Cache for future use
+        await cacheResponse(query, aiAnswer, travelData);
+        
+        // Update API usage
+        dailyApiCalls++;
+        localStorage.setItem('dailyApiCalls', dailyApiCalls.toString());
+        updateCostDisplay();
+        
+      } catch (error) {
+        console.error('Search failed:', error);
+        await streamAnswer('Sorry, I encountered an error while searching for travel information. Please try again.');
+      } finally {
+        isSearching = false;
+        hideProgressiveSearch();
+      }
+    }
+
+    // 🎬 PROGRESSIVE UI ANIMATIONS
+    function transformToCompactMode() {
+      const searchSection = document.getElementById('searchSection');
+      searchSection.classList.add('compact');
+      
+      // Update search input
+      document.getElementById('searchInput').value = currentQuery;
+    }
+
+    function startProgressiveSearch() {
+      document.getElementById('searchProgress').classList.add('show');
+      resetProgressSteps();
+    }
+
+    function hideProgressiveSearch() {
+      setTimeout(() => {
+        document.getElementById('searchProgress').classList.remove('show');
+      }, 1000);
+    }
+
+    function resetProgressSteps() {
+      for (let i = 1; i <= 4; i++) {
+        const step = document.getElementById(`step${i}`);
+        step.classList.remove('active', 'completed');
+      }
+    }
+
+    async function simulateStep(stepNum, text) {
+      const step = document.getElementById(`step${stepNum}`);
+      const textEl = step.querySelector('.progress-text');
+      
+      // Mark previous steps as completed
+      for (let i = 1; i < stepNum; i++) {
+        document.getElementById(`step${i}`).classList.add('completed');
+        document.getElementById(`step${i}`).classList.remove('active');
+      }
+      
+      // Activate current step
+      step.classList.add('active');
+      textEl.textContent = text;
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 400));
+    }
+
+    // 📚 PROGRESSIVE SOURCE LOADING
+    async function showSourcesProgressively(travelData) {
+      const sourcesPreview = document.getElementById('sourcesPreview');
+      const sourcesGrid = document.getElementById('sourcesGrid');
+      
+      sourcesPreview.classList.add('show');
+      sourcesGrid.innerHTML = '';
+      
+      // Add sources one by one with delay
+      for (let i = 0; i < Math.min(travelData.length, 4); i++) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const source = travelData[i];
+        const sourceCard = createSourceCard(source, i);
+        sourcesGrid.appendChild(sourceCard);
+      }
+    }
+
+    function createSourceCard(source, index) {
+      const card = document.createElement('div');
+      card.className = 'source-card';
+      card.style.animationDelay = `${index * 0.1}s`;
+      
+      card.innerHTML = `
+        <div class="source-header">
+          <div class="source-favicon">${getSourceIcon(source.source)}</div>
+          <div class="source-title">${source.name}</div>
+        </div>
+        <div class="source-description">${source.description || 'Travel destination information'}</div>
+      `;
+      
+      return card;
+    }
+
+    function getSourceIcon(source) {
+      const icons = {
+        'mongodb': '🗄️',
+        'geoapify': '📍',
+        'tripadvisor': '🏨',
+        'openstreetmap': '🗺️'
+      };
+      return icons[source] || '🌍';
+    }
+
+    // ⌨️ STREAMING TEXT EFFECT
+    async function streamAnswer(text) {
+      const answerSection = document.getElementById('answerSection');
+      const streamingText = document.getElementById('streamingText');
+      const answerMeta = document.getElementById('answerMeta');
+      
+      answerSection.classList.add('show');
+      streamingText.innerHTML = '';
+      
+      // Update metadata
+      answerMeta.textContent = dailyApiCalls > 0 ? 
+        `Generated with Claude AI • ~₹${(dailyApiCalls * 0.5).toFixed(1)}` : 
+        'From cached response • ₹0';
+      
+      // Stream text character by character
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      streamingText.appendChild(cursor);
+      
+      const words = text.split(' ');
+      let currentText = '';
+      
+      for (let i = 0; i < words.length; i++) {
+        currentText += (i > 0 ? ' ' : '') + words[i];
+        streamingText.textContent = currentText;
+        streamingText.appendChild(cursor);
+        
+        // Variable speed - faster for common words
+        const delay = words[i].length > 6 ? 80 : 40;
+        await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 30));
+      }
+      
+      // Remove cursor after completion
+      setTimeout(() => {
+        cursor.remove();
+        showFinalSources();
+      }, 1000);
+    }
+
+    function showFinalSources() {
+      // Hide sources preview and show final sources
+      document.getElementById('sourcesPreview').style.display = 'none';
+      document.getElementById('sourcesSection').classList.add('show');
+    }
+
+    // 🧠 AI AND DATA FUNCTIONS
+    async function generateClaudeAnswer(query, travelData) {
+      if (!ANTHROPIC_API_KEY) {
+        return `Based on your search for "${query}", here are some great travel recommendations from our database. ${travelData.slice(0, 3).map(d => d.name).join(', ')} are popular destinations that match your criteria.`;
+      }
+      
+      try {
+        const optimizedPrompt = `Travel Query: "${query}"
+
+Available destinations:
+${travelData.slice(0, 5).map(d => `• ${d.name}: ${d.description || 'Popular destination'} (${d.distance || 'nearby'})`).join('\n')}
+
+Provide a helpful, conversational travel answer in 4-5 sentences. Include specific destination names and practical advice.`;
+
+        const response = await fetch(CLAUDE_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 400,
+            messages: [{ role: 'user', content: optimizedPrompt }]
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Claude API failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.content[0].text;
+        
+      } catch (error) {
+        console.error('Claude API error:', error);
+        return `Based on your search for "${query}", here are some excellent travel recommendations. ${travelData.slice(0, 3).map(d => d.name).join(', ')} are wonderful destinations that would be perfect for your trip.`;
+      }
+    }
+
+    async function gatherTravelData(query) {
+      try {
+        const location = extractLocationFromQuery(query);
+        
+        if (location) {
+          const mongoResults = await window.RealProductionTravelAPI.getRealDestinations(location);
+          
+          if (mongoResults && mongoResults.length > 0) {
+            return transformMongoResults(mongoResults);
+          }
+        }
+        
+        // Fallback sample data
+        return [
+          { name: 'Sample Destination 1', description: 'Beautiful place to visit', source: 'travel_db' },
+          { name: 'Sample Destination 2', description: 'Amazing adventure spot', source: 'travel_db' }
+        ];
+        
+      } catch (error) {
+        console.error('Data gathering failed:', error);
+        return [];
+      }
+    }
+
+    function transformMongoResults(mongoResults) {
+      return mongoResults.slice(0, 6).map(dest => ({
+        name: dest.name,
+        description: dest.description,
+        distance: dest.details?.duration?.travel ? `${Math.floor(dest.details.duration.travel / 60)}h` : '2-3h',
+        cost: dest.details?.cost?.average || 500,
+        source: 'mongodb'
+      }));
+    }
+
+    function extractLocationFromQuery(query) {
+      const locations = ['mumbai', 'delhi', 'bangalore', 'chennai', 'kerala', 'goa', 'thane'];
+      const lowerQuery = query.toLowerCase();
+      
+      for (const location of locations) {
+        if (lowerQuery.includes(location)) {
+          return location;
+        }
+      }
+      return null;
+    }
+
+    // 💾 CACHING FUNCTIONS
+    async function checkCache(query) {
+      try {
+        const cacheKey = generateCacheKey(query);
+        const response = await window.RealProductionTravelAPI.makeMongoRequest('find', {
+          collection: 'perplexity_cache',
+          filter: {
+            cache_key: cacheKey,
+            'meta.expires_at': { $gt: new Date().toISOString() }
+          },
+          limit: 1
+        });
+        
+        return response.documents?.[0] || null;
+      } catch (error) {
+        console.error('Cache check failed:', error);
+        return null;
+      }
+    }
+
+    async function cacheResponse(query, answer, travelData) {
+      try {
+        const cacheKey = generateCacheKey(query);
+        const expiryDate = new Date();
+        expiryDate.setHours(expiryDate.getHours() + 24);
+        
+        const cacheDocument = {
+          cache_key: cacheKey,
+          query: query,
+          ai_answer: answer,
+          travel_data: travelData.slice(0, 5),
+          meta: {
+            created_at: new Date().toISOString(),
+            expires_at: expiryDate.toISOString()
+          }
+        };
+        
+        await window.RealProductionTravelAPI.makeMongoRequest('insertOne', {
+          collection: 'perplexity_cache',
+          document: cacheDocument
+        });
+      } catch (error) {
+        console.error('Failed to cache response:', error);
+      }
+    }
+
+    function generateCacheKey(query) {
+      return query.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '_') + '_perplexity';
+    }
+
+    async function displayCachedResponse(cachedData) {
+      await showSourcesProgressively(cachedData.travel_data || []);
+      await streamAnswer(cachedData.ai_answer);
+      
+      // Update final sources
+      setTimeout(() => {
+        const sourcesList = document.getElementById('sourcesList');
+        sourcesList.innerHTML = (cachedData.travel_data || []).map((source, index) => `
+          <div class="source-item">
+            <div class="source-number">${index + 1}</div>
+            <div class="source-content">
+              <div class="source-name">${source.name}</div>
+              <div class="source-url">${source.source || 'Travel Database'}</div>
+            </div>
+          </div>
+        `).join('');
+      }, 2000);
+    }
+
+    // 🎨 UI HELPERS
+    function updateCostDisplay() {
+      const costIndicator = document.getElementById('costIndicator');
+      costIndicator.textContent = `Cache: ${dailyCacheHits} | API: ${dailyApiCalls}`;
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter' && !isSearching) {
+        performSearch();
+      }
+    }
+
+    function useExampleQuery(element) {
+      if (isSearching) return;
+      document.getElementById('searchInput').value = element.textContent;
+      performSearch();
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.body.setAttribute('data-theme', savedTheme);
+    }
+  </script>
+</body>
+</html>
