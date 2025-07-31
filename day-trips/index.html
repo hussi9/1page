@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../smart-location-api.js"></script>
   <script src="./api-client.js"></script>
   <style>
     * {
@@ -780,12 +781,80 @@
       ]
     };
 
-    // Initialize app
-    function init() {
+    // Initialize app with intelligent location detection
+    async function init() {
       setupEventListeners();
-      // Auto-detect location if possible
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(detectCity);
+      
+      // Initialize smart location detection
+      try {
+        console.log('🧠 Initializing Smart Location API...');
+        
+        // Wait for location detection to complete
+        await window.SmartLocationAPI.initLocationDetection();
+        
+        // Get user's current location
+        const userLocation = window.SmartLocationAPI.userLocation;
+        
+        if (userLocation && userLocation.city) {
+          // Auto-populate city input with detected location
+          document.getElementById('cityInput').placeholder = `Detected: ${userLocation.city} (or enter another city)`;
+          
+          // Auto-load nearby destinations
+          console.log('📍 Auto-loading destinations for:', userLocation.city);
+          await loadNearbyDestinations();
+          
+        } else {
+          console.log('📍 Location detection failed, using default');
+          document.getElementById('cityInput').placeholder = "Enter your city (e.g., Mumbai, Delhi, Bangalore...)";
+        }
+        
+      } catch (error) {
+        console.error('Location initialization failed:', error);
+        document.getElementById('cityInput').placeholder = "Enter your city (e.g., Mumbai, Delhi, Bangalore...)";
+      }
+    }
+
+    // Load destinations near user's current location
+    async function loadNearbyDestinations() {
+      try {
+        showLoading();
+        
+        // Get nearby destinations using geospatial queries
+        const nearbyDestinations = await window.SmartLocationAPI.getNearbyDestinations(200000); // 200km radius
+        
+        if (nearbyDestinations && nearbyDestinations.length > 0) {
+          console.log(`🗺️ Found ${nearbyDestinations.length} nearby destinations`);
+          
+          // Update current city for display
+          const userLocation = window.SmartLocationAPI.userLocation;
+          if (userLocation) {
+            currentCity = userLocation.city;
+            document.getElementById('cityInput').value = userLocation.city;
+          }
+          
+          // Store and display destinations
+          destinations[currentCity] = nearbyDestinations;
+          
+          // Get analytics for the area
+          const analyticsData = await window.SmartLocationAPI.getLocationAnalytics 
+            ? await window.SmartLocationAPI.getLocationAnalytics(currentCity.toLowerCase())
+            : null;
+          
+          updateAnalytics(nearbyDestinations, analyticsData);
+          generateRecommendations(nearbyDestinations);
+          showSections();
+          
+        } else {
+          console.log('📍 No nearby destinations found, loading default city data');
+          await loadCity('Mumbai'); // Fallback to Mumbai
+        }
+        
+      } catch (error) {
+        console.error('Failed to load nearby destinations:', error);
+        // Fallback to default city
+        await loadCity('Mumbai');
+      } finally {
+        hideLoading();
       }
     }
 
@@ -803,13 +872,19 @@
           closeModal();
         }
       });
-    }
-
-    // Detect city (placeholder)
-    function detectCity(position) {
-      // In a real app, you'd use reverse geocoding
-      // For demo, we'll suggest Mumbai as default
-      document.getElementById('cityInput').placeholder = "Detected: Mumbai (or enter your city)";
+      
+      // Listen for location updates from SmartLocationAPI
+      window.addEventListener('locationUpdated', (event) => {
+        console.log('📍 Location updated:', event.detail);
+        
+        // Update placeholder with new location
+        if (event.detail.city) {
+          document.getElementById('cityInput').placeholder = `Detected: ${event.detail.city} (or enter another city)`;
+          
+          // Optionally auto-refresh destinations
+          // loadNearbyDestinations();
+        }
+      });
     }
 
     // Search destinations

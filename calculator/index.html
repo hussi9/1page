@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Calculator • Location-Aware Computing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../smart-location-api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #000000;
+            --secondary-bg: #1d1d1f;
+            --card-bg: #2c2c2e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --accent-blue: #007aff;
+            --accent-green: #30d158;
+            --accent-orange: #ff9500;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --blur: blur(20px);
+        }
+
+        [data-theme="light"] {
+            --primary-bg: #f5f5f7;
+            --secondary-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .location-info {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            backdrop-filter: var(--blur);
+            text-align: center;
+        }
+
+        .calculator {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .display {
+            background: var(--secondary-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .display-value {
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .display-expression {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: var(--blur);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn.operator {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+        }
+
+        .btn.clear {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .smart-suggestions {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .suggestions-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+        }
+
+        .suggestion-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .suggestion-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            backdrop-filter: var(--blur);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            
+            .display-value {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                padding: 1rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Smart Calculator</h1>
+            <p>Location-aware computing with intelligent suggestions</p>
+        </div>
+
+        <div class="location-info" id="locationInfo">
+            <p>🌍 Detecting your location for smart suggestions...</p>
+        </div>
+
+        <div class="calculator">
+            <div class="display">
+                <div class="display-expression" id="expression"></div>
+                <div class="display-value" id="display">0</div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn clear" onclick="clearAll()">AC</button>
+                <button class="btn clear" onclick="clearEntry()">CE</button>
+                <button class="btn operator" onclick="inputOperator('/')">&divide;</button>
+                <button class="btn operator" onclick="inputOperator('*')">&times;</button>
+
+                <button class="btn" onclick="inputNumber('7')">7</button>
+                <button class="btn" onclick="inputNumber('8')">8</button>
+                <button class="btn" onclick="inputNumber('9')">9</button>
+                <button class="btn operator" onclick="inputOperator('-')">-</button>
+
+                <button class="btn" onclick="inputNumber('4')">4</button>
+                <button class="btn" onclick="inputNumber('5')">5</button>
+                <button class="btn" onclick="inputNumber('6')">6</button>
+                <button class="btn operator" onclick="inputOperator('+')">+</button>
+
+                <button class="btn" onclick="inputNumber('1')">1</button>
+                <button class="btn" onclick="inputNumber('2')">2</button>
+                <button class="btn" onclick="inputNumber('3')">3</button>
+                <button class="btn operator" onclick="calculate()" rowspan="2">=</button>
+
+                <button class="btn" onclick="inputNumber('0')" style="grid-column: span 2;">0</button>
+                <button class="btn" onclick="inputNumber('.')">.</button>
+            </div>
+        </div>
+
+        <div class="smart-suggestions" id="smartSuggestions" style="display: none;">
+            <div class="suggestions-title">🧠 Smart Suggestions</div>
+            <div id="suggestionsContainer">
+                <!-- Dynamic suggestions will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentValue = '0';
+        let previousValue = null;
+        let operator = null;
+        let waitingForOperand = false;
+        let expression = '';
+
+        // Initialize calculator with location intelligence
+        async function init() {
+            try {
+                console.log('🧮 Initializing Smart Calculator...');
+                
+                // Wait for location detection
+                await window.SmartLocationAPI.initLocationDetection();
+                
+                // Update location display
+                updateLocationDisplay();
+                
+                // Load smart suggestions
+                await loadSmartSuggestions();
+                
+            } catch (error) {
+                console.error('Calculator initialization failed:', error);
+                document.getElementById('locationInfo').innerHTML = '<p>🌍 Location detection unavailable</p>';
+            }
+        }
+
+        // Update location display
+        function updateLocationDisplay() {
+            const location = window.SmartLocationAPI.userLocation;
+            const locationInfo = document.getElementById('locationInfo');
+            
+            if (location && location.city) {
+                locationInfo.innerHTML = `
+                    <p>📍 <strong>${location.city}, ${location.country}</strong></p>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        Smart suggestions enabled for your location
+                    </p>
+                `;
+            } else {
+                locationInfo.innerHTML = '<p>🌍 Location detection failed - using default suggestions</p>';
+            }
+        }
+
+        // Load smart suggestions based on location
+        async function loadSmartSuggestions() {
+            try {
+                const suggestions = await window.SmartLocationAPI.getLocationCalculatorSuggestions();
+                
+                if (suggestions && suggestions.length > 0) {
+                    displaySuggestions(suggestions);
+                } else {
+                    // Default suggestions
+                    displaySuggestions([
+                        {
+                            type: 'tip_calculator',
+                            title: 'Tip Calculator',
+                            description: 'Calculate tips for restaurants',
+                            action: () => openTipCalculator()
+                        },
+                        {
+                            type: 'currency_converter',
+                            title: 'Currency Converter',
+                            description: 'Convert between currencies',
+                            action: () => openCurrencyConverter()
+                        }
+                    ]);
+                }
+                
+            } catch (error) {
+                console.error('Failed to load smart suggestions:', error);
+            }
+        }
+
+        // Display suggestions
+        function displaySuggestions(suggestions) {
+            const container = document.getElementById('suggestionsContainer');
+            const smartSuggestions = document.getElementById('smartSuggestions');
+            
+            container.innerHTML = '';
+            
+            suggestions.forEach(suggestion => {
+                const card = document.createElement('div');
+                card.className = 'suggestion-card';
+                card.innerHTML = `
+                    <div class="suggestion-title">${suggestion.title}</div>
+                    <div class="suggestion-desc">${suggestion.description || ''}</div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    if (suggestion.action) {
+                        suggestion.action();
+                    } else {
+                        applySuggestion(suggestion);
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+            
+            smartSuggestions.style.display = 'block';
+        }
+
+        // Apply suggestion to calculator
+        function applySuggestion(suggestion) {
+            switch (suggestion.type) {
+                case 'currency_conversion':
+                    if (suggestion.data) {
+                        // Set up currency conversion
+                        clearAll();
+                        inputNumber('1');
+                        // Add conversion logic here
+                    }
+                    break;
+                case 'tax_calculator':
+                    if (suggestion.data) {
+                        // Set up tax calculation
+                        clearAll();
+                        inputNumber('100');
+                        // Add tax calculation logic
+                    }
+                    break;
+                case 'tip_calculator':
+                    if (suggestion.data) {
+                        // Set up tip calculation
+                        clearAll();
+                        inputNumber('100');
+                        // Add tip calculation logic
+                    }
+                    break;
+            }
+        }
+
+        // Calculator functions
+        function inputNumber(num) {
+            if (waitingForOperand) {
+                currentValue = num;
+                waitingForOperand = false;
+            } else {
+                currentValue = currentValue === '0' ? num : currentValue + num;
+            }
+            updateDisplay();
+        }
+
+        function inputOperator(nextOperator) {
+            const inputValue = parseFloat(currentValue);
+
+            if (previousValue === null) {
+                previousValue = inputValue;
+            } else if (operator) {
+                const currentResult = calculate();
+                currentValue = String(currentResult);
+                previousValue = currentResult;
+            }
+
+            waitingForOperand = true;
+            operator = nextOperator;
+            updateExpression();
+        }
+
+        function calculate() {
+            const prev = parseFloat(previousValue);
+            const current = parseFloat(currentValue);
+
+            if (previousValue === null || operator === null) {
+                return current;
+            }
+
+            let result;
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                default:
+                    return current;
+            }
+
+            // Save calculation to database (in production)
+            saveCalculation({
+                expression: `${prev} ${operator} ${current}`,
+                result: result,
+                location: window.SmartLocationAPI.userLocation
+            });
+
+            previousValue = null;
+            operator = null;
+            waitingForOperand = true;
+            expression = '';
+
+            updateDisplay();
+            return result;
+        }
+
+        function clearAll() {
+            currentValue = '0';
+            previousValue = null;
+            operator = null;
+            waitingForOperand = false;
+            expression = '';
+            updateDisplay();
+        }
+
+        function clearEntry() {
+            currentValue = '0';
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = currentValue;
+        }
+
+        function updateExpression() {
+            if (previousValue !== null && operator) {
+                expression = `${previousValue} ${operator}`;
+                document.getElementById('expression').textContent = expression;
+            }
+        }
+
+        // Save calculation (placeholder for database integration)
+        function saveCalculation(calculation) {
+            console.log('💾 Saving calculation:', calculation);
+            // In production, this would save to MongoDB via API
+        }
+
+        // Smart calculator features
+        function openTipCalculator() {
+            const billAmount = prompt('Enter bill amount:');
+            if (billAmount) {
+                const location = window.SmartLocationAPI.userLocation;
+                const tipRate = location?.country === 'India' ? 10 : 18; // Local tip customs
+                const tip = (parseFloat(billAmount) * tipRate) / 100;
+                const total = parseFloat(billAmount) + tip;
+                
+                alert(`Bill: $${billAmount}\nTip (${tipRate}%): $${tip.toFixed(2)}\nTotal: $${total.toFixed(2)}`);
+            }
+        }
+
+        function openCurrencyConverter() {
+            const amount = prompt('Enter amount to convert:');
+            if (amount) {
+                const location = window.SmartLocationAPI.userLocation;
+                // This would use real exchange rates in production
+                alert(`Currency conversion feature coming soon!\nDetected location: ${location?.country || 'Unknown'}`);
+            }
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+        }
+
+        // Listen for location updates
+        window.addEventListener('locationUpdated', (event) => {
+            console.log('📍 Location updated in calculator:', event.detail);
+            updateLocationDisplay();
+            loadSmartSuggestions();
+        });
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
