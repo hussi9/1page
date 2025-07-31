@@ -14,8 +14,8 @@
   <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
-  <script src="../smart-location-api.js"></script>
-  <script src="../real-production-api.js"></script>
+  <script src="real-production-api.js"></script>
+  <script src="seed-thane-data.js"></script>
   <style>
     * {
       margin: 0;
@@ -1488,12 +1488,18 @@
         
       } catch (error) {
         console.error('❌ Real location detection failed:', error);
-        showLocationStatus('🌍 Location not available - showing search interface');
-        currentCity = 'Unknown';
+        showLocationStatus('🌍 Location not available - loading sample destinations');
+        currentCity = 'Thane';
         
-        // Fallback to search mode
-        document.getElementById('cityInput').placeholder = "Enter your city to find day trips...";
-        showSearchInterface();
+        // Fallback: Seed MongoDB with Thane data and show it
+        try {
+          await seedSampleData();
+          await loadSampleDestinations();
+        } catch (fallbackError) {
+          console.error('Fallback failed:', fallbackError);
+          document.getElementById('cityInput').placeholder = "Enter your city to find day trips...";
+          showSearchInterface();
+        }
       }
       
     }
@@ -1635,6 +1641,98 @@
           <p>Enter your city in the search box above to find amazing destinations near you</p>
         </div>
       `;
+    }
+
+    async function seedSampleData() {
+      console.log('🌱 Seeding sample Thane destinations...');
+      
+      if (window.ThaneSeeder) {
+        await window.ThaneSeeder.seedThaneDestinations();
+        console.log('✅ Sample data seeded to MongoDB');
+      } else {
+        console.warn('ThaneSeeder not available');
+      }
+    }
+
+    async function loadSampleDestinations() {
+      console.log('📍 Loading sample destinations from MongoDB...');
+      
+      try {
+        const destinations = await window.RealProductionTravelAPI.getRealDestinations('thane');
+        
+        if (destinations && destinations.length > 0) {
+          console.log(`✅ Loaded ${destinations.length} sample destinations`);
+          
+          // Transform MongoDB data to display format
+          const displayDestinations = destinations.map(dest => ({
+            id: dest._id,
+            name: dest.name,
+            description: dest.description,
+            distance: Math.round(dest.location?.coordinates ? 
+              calculateDistance([19.2183, 72.9781], dest.location.coordinates) : 25) + ' km',
+            time: dest.details?.duration?.travel ? 
+              Math.floor(dest.details.duration.travel / 60) + 'h ' + (dest.details.duration.travel % 60) + 'm' : 
+              '2h 30m',
+            cost: dest.details?.cost?.average || 500,
+            category: dest.details?.categories?.[0] || 'nature',
+            activities: dest.details?.activities?.map(a => a.name || a) || [],
+            season: dest.details?.bestSeason || 'all_year',
+            familyFriendly: dest.details?.familyFriendly || true,
+            rating: dest.social?.rating?.overall || 4.2,
+            reviews: dest.social?.rating?.count || 100,
+            image: dest.images?.[0]?.url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+            icon: getCategoryIcon(dest.details?.categories?.[0]),
+            featured: dest.ai?.trending || false
+          }));
+          
+          // Update global state
+          realDestinations = displayDestinations;
+          
+          // Show destinations
+          const mainContent = document.getElementById('mainContent');
+          const resultsHeader = document.getElementById('resultsHeader');
+          const resultsInfo = document.getElementById('resultsInfo');
+          
+          mainContent.style.display = 'block';
+          resultsHeader.style.display = 'flex';
+          resultsInfo.textContent = `${displayDestinations.length} destinations in Thane, Maharashtra`;
+          
+          displayDestinations(displayDestinations);
+          showLocationStatus(`✅ Showing ${displayDestinations.length} destinations in Thane`);
+          
+        } else {
+          console.warn('No sample destinations found in MongoDB');
+          showSearchInterface();
+        }
+        
+      } catch (error) {
+        console.error('Failed to load sample destinations:', error);
+        showSearchInterface();
+      }
+    }
+
+    function getCategoryIcon(category) {
+      const icons = {
+        'nature': '🏞️',
+        'beach': '🏖️', 
+        'heritage': '🏛️',
+        'adventure': '🥾',
+        'cultural': '🏛️',
+        'spiritual': '🕉️',
+        'wildlife': '🦌'
+      };
+      return icons[category] || '📍';
+    }
+
+    function calculateDistance(coord1, coord2) {
+      const R = 6371; // Earth's radius in km
+      const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+      const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
     }
     
     function getImageForCategory(category) {
