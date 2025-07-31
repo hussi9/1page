@@ -766,6 +766,7 @@
     /* Sources Section */
     .sources-section {
       display: none;
+      margin-top: 2rem;
     }
 
     .sources-section.show {
@@ -1121,25 +1122,32 @@
       card.className = 'source-card destination-card';
       card.style.animationDelay = `${index * 0.1}s`;
       
-      // Get image URL from various sources
+      // Clean up the data to prevent rubbish
+      const cleanName = source.name || 'Destination';
+      const cleanDistance = typeof source.distance === 'number' ? source.distance : parseInt(source.distance) || 50;
+      const cleanRating = source.rating || (3.8 + Math.random() * 1.2);
+      const cleanDescription = source.description || `Popular ${source.category || 'travel'} destination`;
+      const cleanCost = source.cost || Math.round(cleanDistance * 15 + 500);
+      
+      // Get appropriate image
       const imageUrl = source.image || 
                       source.photos?.[0] || 
-                      getDestinationImage(source.name, source.category);
+                      getDestinationImage(cleanName, source.category);
       
       card.innerHTML = `
         <div class="destination-image">
-          <img src="${imageUrl}" alt="${source.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop&auto=format&q=60'">
-          <div class="destination-rating">⭐ ${source.rating?.toFixed(1) || '4.2'}</div>
+          <img src="${imageUrl}" alt="${cleanName}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop&auto=format&q=60'">
+          <div class="destination-rating">⭐ ${cleanRating.toFixed(1)}</div>
         </div>
         <div class="destination-content">
           <div class="destination-header">
-            <h3 class="destination-title">${source.name}</h3>
-            <div class="destination-distance">${source.distance}km</div>
+            <h3 class="destination-title">${cleanName}</h3>
+            <div class="destination-distance">${cleanDistance}km</div>
           </div>
-          <p class="destination-description">${source.description}</p>
+          <p class="destination-description">${cleanDescription}</p>
           <div class="destination-details">
-            <span class="destination-cost">₹${source.cost || Math.round(source.distance * 15 + 500)}</span>
-            <span class="destination-category">${source.category || 'Tourism'}</span>
+            <span class="destination-cost">₹${cleanCost}</span>
+            <span class="destination-category">${(source.category || 'Tourism').charAt(0).toUpperCase() + (source.category || 'Tourism').slice(1)}</span>
           </div>
         </div>
       `;
@@ -1357,31 +1365,41 @@
         await new Promise(resolve => setTimeout(resolve, delay + Math.random() * 10));
       }
       
-      // Remove cursor after completion
+      // Remove cursor after completion and show final destinations
       setTimeout(() => {
         cursor.remove();
         showFinalSources();
-      }, 1000);
+      }, 2000); // Give more time to see the summary
     }
 
     function showFinalSources() {
-      // Hide sources preview and show final sources with destination cards
-      document.getElementById('sourcesPreview').style.display = 'none';
+      // DON'T hide the preview cards - keep them visible
+      // Just enhance the final sources section with better cards
       
-      // Show the final sources section with proper destination cards
       const sourcesSection = document.getElementById('sourcesSection');
       const sourcesList = document.getElementById('sourcesList');
       
       sourcesSection.classList.add('show');
       
-      // Clear and rebuild with destination cards
+      // Clear and rebuild with proper destination cards
       sourcesList.innerHTML = '';
       
       // Get the last travel data from global variable
       if (window.lastTravelData && window.lastTravelData.length > 0) {
         sourcesList.style.display = 'grid';
         sourcesList.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
-        sourcesList.style.gap = '1rem';
+        sourcesList.style.gap = '1.5rem';
+        sourcesList.style.marginTop = '2rem';
+        
+        // Add a header for the destination cards
+        const header = document.createElement('div');
+        header.style.gridColumn = '1 / -1';
+        header.innerHTML = `
+          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; text-align: center;">
+            🎯 Recommended Destinations
+          </h2>
+        `;
+        sourcesList.appendChild(header);
         
         window.lastTravelData.forEach((destination, index) => {
           const card = createDestinationCard(destination, index);
