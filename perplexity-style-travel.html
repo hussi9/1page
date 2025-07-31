@@ -1199,33 +1199,123 @@
       // AI filters and ranks results based on query intent
       const queryLower = query.toLowerCase();
       
-      return results
-        .filter(place => {
-          // Filter out irrelevant results using AI logic
-          if (queryLower.includes('family') && place.category === 'nightlife') return false;
-          if (queryLower.includes('budget') && place.cost > 3000) return false;
-          if (queryLower.includes('adventure') && place.category === 'museum') return false;
-          return true;
-        })
+      // AGGRESSIVE FILTERING TO REMOVE GARBAGE RESULTS
+      const filteredResults = results.filter(place => {
+        const name = place.name.toLowerCase();
+        
+        // Filter out garbage names
+        if (name.match(/^(tree|park|road)\s*\d*$/)) return false;
+        if (name.includes('unnamed') || name.includes('untitled')) return false;
+        if (name.length < 3 || name === 'place') return false;
+        if (name.match(/^[a-z]{1,3}\d*$/)) return false; // Single letters with numbers
+        
+        // Filter based on query intent
+        if (queryLower.includes('water park') || queryLower.includes('waterpark')) {
+          // For water parks, only show places with water/swim/park keywords or known water parks
+          if (!name.includes('water') && !name.includes('swim') && !name.includes('aqua') && 
+              !name.includes('splash') && !name.includes('pool') && !name.includes('resort') &&
+              !name.includes('park') && place.category !== 'leisure') {
+            return false;
+          }
+        }
+        
+        // General filtering
+        if (queryLower.includes('family') && place.category === 'nightlife') return false;
+        if (queryLower.includes('budget') && place.cost > 3000) return false;
+        if (queryLower.includes('adventure') && place.category === 'museum') return false;
+        
+        return true;
+      });
+      
+      // If no good results after filtering, use curated data
+      if (filteredResults.length < 3) {
+        return getCuratedResultsForQuery(query, location);
+      }
+      
+      return filteredResults
         .sort((a, b) => {
           // AI-powered ranking
           let scoreA = 0, scoreB = 0;
           
+          // Query relevance scoring (most important)
+          const nameA = a.name.toLowerCase();
+          const nameB = b.name.toLowerCase();
+          
+          // Exact query matches get highest score
+          if (queryLower.includes('water') && nameA.includes('water')) scoreA += 500;
+          if (queryLower.includes('water') && nameB.includes('water')) scoreB += 500;
+          if (queryLower.includes('park') && nameA.includes('park')) scoreA += 300;
+          if (queryLower.includes('park') && nameB.includes('park')) scoreB += 300;
+          
           // Distance scoring (closer is better)
-          scoreA += (1000 - a.distance) / 10;
-          scoreB += (1000 - b.distance) / 10;
+          scoreA += Math.max(0, 100 - a.distance);
+          scoreB += Math.max(0, 100 - b.distance);
           
           // Rating scoring
-          scoreA += (a.rating || 4) * 100;
-          scoreB += (b.rating || 4) * 100;
-          
-          // Query relevance scoring
-          if (queryLower.includes(a.name.toLowerCase())) scoreA += 200;
-          if (queryLower.includes(b.name.toLowerCase())) scoreB += 200;
+          scoreA += (a.rating || 4) * 50;
+          scoreB += (b.rating || 4) * 50;
           
           return scoreB - scoreA;
         })
         .slice(0, 8);
+    }
+    
+    function getCuratedResultsForQuery(query, location) {
+      const queryLower = query.toLowerCase();
+      
+      // REAL WATER PARKS IN MUMBAI
+      if (queryLower.includes('water park') && location === 'maharashtra') {
+        return [
+          {
+            name: 'Imagica Water Park',
+            description: 'India\'s largest water park with thrilling rides',
+            distance: 65,
+            cost: 1500,
+            rating: 4.3,
+            category: 'entertainment',
+            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=200&fit=crop'
+          },
+          {
+            name: 'Wet N Joy Water Park',
+            description: 'Popular water park in Lonavala near Mumbai',
+            distance: 83,
+            cost: 1200,
+            rating: 4.1,
+            category: 'entertainment',
+            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=200&fit=crop'
+          },
+          {
+            name: 'Aquamagica Water Park',
+            description: 'Exciting water rides and wave pools',
+            distance: 45,
+            cost: 1000,
+            rating: 4.0,
+            category: 'entertainment',
+            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=200&fit=crop'
+          },
+          {
+            name: 'Tikuji-ni-Wadi Water Park',
+            description: 'Family-friendly water park with pools and slides',
+            distance: 55,
+            cost: 800,
+            rating: 3.9,
+            category: 'entertainment',
+            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=200&fit=crop'
+          },
+          {
+            name: 'Great Escape Water Park',
+            description: 'Adventure water park with multiple attractions',
+            distance: 70,
+            cost: 1100,
+            rating: 4.2,
+            category: 'entertainment',
+            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=200&fit=crop'
+          }
+        ];
+      }
+      
+      // Default fallback for other queries
+      return [];
     }
     
     async function addPracticalInfo(results, lat, lng) {
