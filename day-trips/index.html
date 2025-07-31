@@ -1787,7 +1787,7 @@
           console.log(`✅ Loaded ${destinations.length} sample destinations`);
           
           // Transform MongoDB data to display format
-          const displayDestinations = destinations.map(dest => ({
+          const transformedDestinations = destinations.map(dest => ({
             id: dest._id,
             name: dest.name,
             description: dest.description,
@@ -1809,7 +1809,7 @@
           }));
           
           // Update global state
-          realDestinations = displayDestinations;
+          realDestinations = transformedDestinations;
           
           // Show destinations
           const mainContent = document.getElementById('mainContent');
@@ -1818,10 +1818,11 @@
           
           mainContent.style.display = 'block';
           resultsHeader.style.display = 'flex';
-          resultsInfo.textContent = `${displayDestinations.length} destinations in Thane, Maharashtra`;
+          resultsInfo.textContent = `${transformedDestinations.length} destinations in Thane, Maharashtra`;
           
-          displayDestinations(displayDestinations);
-          showLocationStatus(`✅ Showing ${displayDestinations.length} destinations in Thane`);
+          console.log('🎯 About to display destinations:', transformedDestinations);
+          displayDestinations(transformedDestinations);
+          showLocationStatus(`✅ Showing ${transformedDestinations.length} destinations in Thane`);
           
         } else {
           console.warn('No sample destinations found in MongoDB');
@@ -1936,20 +1937,78 @@
 
     // Display destinations in the UI
     function displayDestinations(destinations) {
-      const container = document.getElementById('destinations-container');
-      if (!container) return;
+      const container = document.getElementById('destinationsGrid');
+      if (!container) {
+        console.error('❌ destinationsGrid container not found');
+        return;
+      }
       
+      if (!destinations || destinations.length === 0) {
+        container.innerHTML = `
+          <div class="no-results" style="grid-column: 1/-1;">
+            <h3>No destinations found</h3>
+            <p>Try adjusting your search or explore different categories</p>
+          </div>
+        `;
+        return;
+      }
+      
+      console.log(`📍 Displaying ${destinations.length} destinations`);
       container.innerHTML = destinations.map(dest => createDestinationCard(dest)).join('');
     }
 
     // Create destination card HTML
     function createDestinationCard(destination) {
+      const activities = destination.activities && destination.activities.length > 0 
+        ? destination.activities.slice(0, 3).join(', ') 
+        : 'Various activities';
+        
       return `
-        <div class="destination-card">
-          <h3>${destination.name}</h3>
-          <p>Distance: ${destination.distance}</p>
-          <p>Category: ${destination.category}</p>
-          <p>Cost: ₹${destination.cost}</p>
+        <div class="destination-card" data-category="${destination.category}">
+          <div class="card-image">
+            <img src="${destination.image || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop'}" 
+                 alt="${destination.name}" 
+                 loading="lazy">
+            <div class="card-badge">${destination.icon || '📍'}</div>
+            ${destination.featured ? '<div class="featured-badge">✨ Featured</div>' : ''}
+          </div>
+          
+          <div class="card-content">
+            <div class="card-header">
+              <h3 class="card-title">${destination.name}</h3>
+              <div class="card-rating">
+                <span class="rating-stars">⭐ ${destination.rating || 4.2}</span>
+                <span class="rating-count">(${destination.reviews || 100})</span>
+              </div>
+            </div>
+            
+            <p class="card-description">${destination.description || 'Beautiful destination worth visiting'}</p>
+            
+            <div class="card-details">
+              <div class="detail">
+                <span class="detail-icon">📍</span>
+                <span>${destination.distance || '25 km'}</span>
+              </div>
+              <div class="detail">
+                <span class="detail-icon">⏱️</span>
+                <span>${destination.time || '2h 30m'}</span>
+              </div>
+              <div class="detail">
+                <span class="detail-icon">💰</span>
+                <span>₹${destination.cost || 500}</span>
+              </div>
+            </div>
+            
+            <div class="card-activities">
+              <span class="activities-label">Activities:</span>
+              <span class="activities-text">${activities}</span>
+            </div>
+            
+            <div class="card-footer">
+              <span class="category-tag">${destination.category || 'nature'}</span>
+              ${destination.familyFriendly ? '<span class="family-tag">👨‍👩‍👧‍👦 Family Friendly</span>' : ''}
+            </div>
+          </div>
         </div>
       `;
     }
@@ -1974,9 +2033,14 @@
 
     // Show no destinations message
     function showNoDestinationsMessage() {
-      const container = document.getElementById('destinations-container');
+      const container = document.getElementById('destinationsGrid');
       if (container) {
-        container.innerHTML = '<p>No destinations available at the moment. Please try again later.</p>';
+        container.innerHTML = `
+          <div class="no-results" style="grid-column: 1/-1;">
+            <h3>No destinations available</h3>
+            <p>Please try again later or check your connection.</p>
+          </div>
+        `;
       }
     }
 
