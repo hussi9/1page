@@ -1614,15 +1614,9 @@
         showLocationStatus('🌍 Location not available - loading sample destinations');
         currentCity = 'Thane';
         
-        // Fallback: Seed MongoDB with Thane data and show it
-        try {
-          await seedSampleData();
-          await loadSampleDestinations();
-        } catch (fallbackError) {
-          console.error('Fallback failed:', fallbackError);
-          document.getElementById('cityInput').placeholder = "Enter your city to find day trips...";
-          showSearchInterface();
-        }
+        // Show search interface - no auto-loading
+        document.getElementById('cityInput').placeholder = "Search for destinations in any city...";
+        showSearchInterface();
       }
       
     }
@@ -2182,21 +2176,195 @@
       }, 300); // 300ms debounce for smooth UX
     }
 
-    // Perform instant search
-    function performInstantSearch(query) {
-      const results = realDestinations.filter(dest => 
-        dest.name.toLowerCase().includes(query.toLowerCase()) ||
-        dest.description.toLowerCase().includes(query.toLowerCase()) ||
-        dest.category.toLowerCase().includes(query.toLowerCase()) ||
-        dest.activities.some(activity => 
-          activity.toLowerCase().includes(query.toLowerCase())
-        )
-      );
-      
-      displayDestinations(results);
-      updateSearchCounter(results.length, query);
-      
-      console.log(`🔍 Found ${results.length} results for "${query}"`);
+    // 🧠 INTELLIGENT CACHE-FIRST SEARCH
+    async function performInstantSearch(query) {
+      try {
+        console.log(`🔍 Starting intelligent search for: "${query}"`);
+        
+        // Step 1: Check MongoDB cache first (Lightning Fast)
+        const cachedResults = await checkSearchCache(query);
+        
+        if (cachedResults && cachedResults.length > 0) {
+          console.log(`⚡ Cache HIT! Found ${cachedResults.length} cached results`);
+          displayDestinations(cachedResults);
+          updateSearchCounter(cachedResults.length, query);
+          
+          // Background: Update cache freshness (non-blocking)
+          updateCacheAccess(query);
+          return;
+        }
+        
+        // Step 2: Cache MISS - Get fresh data from APIs
+        console.log(`💿 Cache MISS - Fetching fresh data for: "${query}"`);
+        updateSearchCounter(0, `Searching ${query}...`);
+        
+        const freshResults = await fetchAndCacheResults(query);
+        
+        if (freshResults && freshResults.length > 0) {
+          console.log(`✅ Found ${freshResults.length} fresh results for "${query}"`);
+          displayDestinations(freshResults);
+          updateSearchCounter(freshResults.length, query);
+        } else {
+          console.log(`❌ No results found for "${query}"`);
+          displayDestinations([]);
+          updateSearchCounter(0, query);
+        }
+        
+      } catch (error) {
+        console.error('Search failed:', error);
+        updateSearchCounter(0, `Error searching for "${query}"`);
+        displayDestinations([]);
+      }
+    }
+
+    // Check MongoDB cache for search results
+    async function checkSearchCache(query) {
+      try {
+        const cacheKey = generateCacheKey(query);
+        console.log(`🔍 Checking cache for key: ${cacheKey}`);
+        
+        const response = await window.RealProductionTravelAPI.makeMongoRequest('find', {
+          collection: 'search_cache',
+          filter: {
+            search_key: cacheKey,
+            'cache_meta.freshness_score': { $gte: 0.7 }  // Fresh enough (70%)
+          },
+          limit: 1
+        });
+        
+        if (response.documents && response.documents.length > 0) {
+          const cached = response.documents[0];
+          return cached.destinations || [];
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Cache check failed:', error);
+        return null;
+      }
+    }
+
+    // Fetch fresh results and cache them
+    async function fetchAndCacheResults(query) {
+      try {
+        // Step 1: Try to get user location for better results
+        let userLocation = null;
+        try {
+          userLocation = await window.RealProductionTravelAPI.detectUserLocation();
+        } catch (e) {
+          console.log('No location available, using city-based search');
+        }
+        
+        // Step 2: Search for destinations using APIs
+        let results = [];
+        
+        if (userLocation) {
+          // Location-based search
+          const [lat, lng] = userLocation.coordinates;
+          results = await window.RealProductionTravelAPI.searchEnhancedPlaces(lat, lng);
+          
+          // Filter by query
+          results = results.filter(dest => 
+            dest.name.toLowerCase().includes(query.toLowerCase()) ||
+            dest.description.toLowerCase().includes(query.toLowerCase()) ||
+            dest.type.toLowerCase().includes(query.toLowerCase())
+          );
+        } else {
+          // City-based search - check if we have data for this city
+          const cityResults = await window.RealProductionTravelAPI.getRealDestinations(query.toLowerCase());
+          
+          if (cityResults && cityResults.length > 0) {
+            // Transform MongoDB data to display format
+            results = cityResults.map(dest => ({
+              id: dest._id,
+              name: dest.name,
+              description: dest.description,
+              distance: '25 km', // Default since no location
+              time: dest.details?.duration?.travel ? 
+                Math.floor(dest.details.duration.travel / 60) + 'h ' + (dest.details.duration.travel % 60) + 'm' : 
+                '2h 30m',
+              cost: dest.details?.cost?.average || 500,
+              category: dest.details?.categories?.[0] || 'nature',
+              activities: dest.details?.activities?.map(a => a.name || a) || [],
+              season: dest.details?.bestSeason || 'all_year',
+              familyFriendly: dest.details?.familyFriendly || true,
+              rating: dest.social?.rating?.overall || 4.2,
+              reviews: dest.social?.rating?.count || 100,
+              image: dest.images?.[0]?.url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+              icon: getCategoryIcon(dest.details?.categories?.[0]),
+              featured: dest.ai?.trending || false
+            }));
+          }
+        }
+        
+        // Step 3: Cache the results for future searches
+        if (results.length > 0) {
+          await cacheSearchResults(query, results, userLocation);
+        }
+        
+        return results;
+        
+      } catch (error) {
+        console.error('Failed to fetch fresh results:', error);
+        return [];
+      }
+    }
+
+    // Cache search results in MongoDB
+    async function cacheSearchResults(query, results, userLocation) {
+      try {
+        const cacheKey = generateCacheKey(query);
+        const cacheDocument = {
+          search_key: cacheKey,
+          query: {
+            original: query,
+            normalized: query.toLowerCase().trim(),
+            location: userLocation ? {
+              city: userLocation.city,
+              coordinates: userLocation.coordinates
+            } : null
+          },
+          cache_meta: {
+            created_at: new Date().toISOString(),
+            last_accessed: new Date().toISOString(),
+            access_count: 1,
+            freshness_score: 1.0,  // Brand new data
+            api_sources: ['geoapify', 'tripadvisor', 'openstreetmap']
+          },
+          destinations: results
+        };
+        
+        await window.RealProductionTravelAPI.makeMongoRequest('insertOne', {
+          collection: 'search_cache',
+          document: cacheDocument
+        });
+        
+        console.log(`💾 Cached ${results.length} results for "${query}"`);
+      } catch (error) {
+        console.error('Failed to cache results:', error);
+      }
+    }
+
+    // Generate cache key for search
+    function generateCacheKey(query) {
+      return query.toLowerCase().trim().replace(/\s+/g, '_') + '_search';
+    }
+
+    // Update cache access (non-blocking)
+    async function updateCacheAccess(query) {
+      try {
+        const cacheKey = generateCacheKey(query);
+        await window.RealProductionTravelAPI.makeMongoRequest('updateOne', {
+          collection: 'search_cache',
+          filter: { search_key: cacheKey },
+          update: {
+            $set: { 'cache_meta.last_accessed': new Date().toISOString() },
+            $inc: { 'cache_meta.access_count': 1 }
+          }
+        });
+      } catch (error) {
+        console.log('Cache access update failed:', error);
+      }
     }
 
     // Update search results counter

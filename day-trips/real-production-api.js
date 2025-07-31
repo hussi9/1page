@@ -328,6 +328,33 @@ class RealProductionTravelAPI {
     }
   }
 
+  // GENERIC MONGODB REQUEST METHOD
+  async makeMongoRequest(action, payload) {
+    try {
+      const response = await fetch(`${this.mongoConfig.dataApiUrl}/action/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.mongoConfig.apiKey
+        },
+        body: JSON.stringify({
+          ...payload,
+          dataSource: this.mongoConfig.dataSource,
+          database: this.mongoConfig.database
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`MongoDB ${action} failed: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`MongoDB ${action} error:`, error);
+      throw error;
+    }
+  }
+
   // REAL MONGODB OPERATIONS
   async saveRealDestination(destinationData) {
     try {
