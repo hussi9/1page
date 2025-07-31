@@ -695,6 +695,182 @@
       }
     }
 
+    /* Advanced Filters */
+    .advanced-filters {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
+      padding: 2rem;
+      margin: 2rem 0;
+      backdrop-filter: var(--blur-heavy);
+      box-shadow: var(--shadow-light);
+      display: none;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .advanced-filters.active {
+      display: block;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .filter-select {
+      background: var(--surface-hover);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-medium);
+      padding: 0.8rem 1.2rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
+    }
+
+    .filter-select:hover {
+      border-color: var(--accent-blue);
+      transform: scale(1.02);
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .filter-actions .control-btn {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+    }
+
+    .filter-actions .control-btn:hover {
+      background: #0066cc;
+    }
+
+    /* Enhanced Analytics with More Metrics */
+    .analytics-extended {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
+      padding: 2rem;
+      backdrop-filter: var(--blur-heavy);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--shadow-light);
+      text-align: center;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--accent-blue);
+    }
+
+    .metric-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Enhanced Modal with More Details */
+    .modal-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .detail-item {
+      background: var(--surface-hover);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-medium);
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+      border-color: var(--accent-blue);
+      transform: scale(1.05);
+    }
+
+    .detail-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .detail-value {
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 0.3rem;
+    }
+
+    .detail-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Cache Busting */
+    .version-indicator {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      backdrop-filter: var(--blur-light);
+      z-index: 100;
+    }
+
     /* Hide sections initially */
     #analyticsSection,
     #recommendationsSection {
@@ -731,9 +907,112 @@
         </div>
         
         <div class="filters">
-          <div class="filter-pill active" data-filter="all">All Destinations</div>
-          <div class="filter-pill kid-friendly" data-filter="kid-friendly">Family Adventures</div>
-          <div class="filter-pill adventurous" data-filter="adventurous">Thrill Seekers</div>
+          <div class="filter-pill active" data-filter="all" data-type="category">All Destinations</div>
+          <div class="filter-pill kid-friendly" data-filter="kid-friendly" data-type="family">👨‍👩‍👧‍👦 Family Friendly</div>
+          <div class="filter-pill adventurous" data-filter="adventure" data-type="category">🚀 Adventure</div>
+          <div class="filter-pill" data-filter="hill_station" data-type="category">🏔️ Hill Stations</div>
+          <div class="filter-pill" data-filter="beach" data-type="category">🏖️ Beaches</div>
+          <div class="filter-pill" data-filter="heritage" data-type="category">🏛️ Heritage</div>
+        </div>
+        
+        <div class="advanced-filters" id="advancedFilters">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>💰 Budget</label>
+              <select class="filter-select" id="budgetFilter">
+                <option value="all">All Budgets</option>
+                <option value="low">Low (< ₹1000)</option>
+                <option value="medium">Medium (₹1000-2000)</option>
+                <option value="high">High (> ₹2000)</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>⏱️ Duration</label>
+              <select class="filter-select" id="durationFilter">
+                <option value="all">Any Duration</option>
+                <option value="half_day">Half Day</option>
+                <option value="full_day">Full Day</option>
+                <option value="overnight">Overnight</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>🎯 Difficulty</label>
+              <select class="filter-select" id="difficultyFilter">
+                <option value="all">Any Level</option>
+                <option value="easy">Easy</option>
+                <option value="moderate">Moderate</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>🌤️ Season</label>
+              <select class="filter-select" id="seasonFilter">
+                <option value="all">Any Season</option>
+                <option value="winter">Winter</option>
+                <option value="monsoon">Monsoon</option>
+                <option value="summer">Summer</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>🚗 Transport</label>
+              <select class="filter-select" id="transportFilter">
+                <option value="all">Any Transport</option>
+                <option value="train">Train</option>
+                <option value="car">Car</option>
+                <option value="bus">Bus</option>
+                <option value="ferry">Ferry</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>🛡️ Safety (Min)</label>
+              <select class="filter-select" id="safetyFilter">
+                <option value="0">Any Safety</option>
+                <option value="7">7+ Stars</option>
+                <option value="8">8+ Stars</option>
+                <option value="9">9+ Stars</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>⭐ Reviews (Min)</label>
+              <select class="filter-select" id="reviewsFilter">
+                <option value="0">Any Rating</option>
+                <option value="4.0">4.0+ Stars</option>
+                <option value="4.2">4.2+ Stars</option>
+                <option value="4.5">4.5+ Stars</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label>👥 Crowd Level</label>
+              <select class="filter-select" id="crowdFilter">
+                <option value="all">Any Crowd</option>
+                <option value="low">Low Crowd</option>
+                <option value="medium">Medium Crowd</option>
+                <option value="high">High Crowd</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-actions">
+            <button class="control-btn" onclick="applyFilters()">Apply Filters</button>
+            <button class="control-btn" onclick="clearFilters()">Clear All</button>
+            <button class="control-btn" onclick="toggleAdvancedFilters()">Hide Advanced</button>
+          </div>
+        </div>
+        
+        <div class="filter-actions">
+          <button class="control-btn" onclick="toggleAdvancedFilters()" id="advancedToggle">Show Advanced Filters</button>
+          <button class="control-btn" onclick="sortDestinations('distance')">Sort by Distance</button>
+          <button class="control-btn" onclick="sortDestinations('cost')">Sort by Cost</button>
+          <button class="control-btn" onclick="sortDestinations('rating')">Sort by Rating</button>
         </div>
       </div>
     </div>
@@ -748,8 +1027,9 @@
 
   <!-- Analytics Dashboard -->
   <section class="analytics-section" id="analyticsSection">
-    <h2 class="section-title">Travel Intelligence</h2>
+    <h2 class="section-title">Travel Intelligence Dashboard</h2>
     
+    <!-- Primary Metrics -->
     <div class="analytics-grid">
       <div class="analytics-card">
         <div class="card-header">
@@ -788,12 +1068,71 @@
       </div>
     </div>
 
+    <!-- Extended Metrics -->
+    <div class="analytics-extended">
+      <div class="metric-card">
+        <div class="metric-icon">⭐</div>
+        <div class="metric-number" id="avgRating">0.0</div>
+        <div class="metric-description">Average Rating</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">🛡️</div>
+        <div class="metric-number" id="avgSafety">0</div>
+        <div class="metric-description">Safety Score</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">📸</div>
+        <div class="metric-number" id="avgPhotoSpots">0</div>
+        <div class="metric-description">Photo Opportunities</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">🚗</div>
+        <div class="metric-number" id="avgDistance">0</div>
+        <div class="metric-description">Avg Distance (km)</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-number" id="avgTravelTime">0</div>
+        <div class="metric-description">Avg Travel Time</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">🍽️</div>
+        <div class="metric-number" id="avgFoodOptions">0</div>
+        <div class="metric-description">Food Options</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">♿</div>
+        <div class="metric-number" id="accessibilityScore">0%</div>
+        <div class="metric-description">Accessibility</div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon">🅿️</div>
+        <div class="metric-number" id="parkingAvailable">0%</div>
+        <div class="metric-description">Parking Available</div>
+      </div>
+    </div>
+
     <div class="chart-container">
       <canvas id="costDistributionChart" class="chart-canvas"></canvas>
     </div>
 
     <div class="chart-container">
       <canvas id="categoryChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="difficultyChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="safetyChart" class="chart-canvas"></canvas>
     </div>
   </section>
 
@@ -804,13 +1143,18 @@
     </div>
   </div>
 
+  <!-- Version Indicator for Cache Busting -->
+  <div class="version-indicator">
+    v2.0 • Enhanced UI
+  </div>
+
   <script>
     // Global data
     let currentCity = '';
     let destinations = {};
     let charts = {};
 
-    // Destination database (fallback data)
+    // Comprehensive destination database with extensive metrics
     const destinationDatabase = {
       Mumbai: [
         {
@@ -819,14 +1163,28 @@
           time: "2 hours",
           cost: 1500,
           category: "hill_station",
-          activities: ["trekking", "waterfalls", "caves"],
+          activities: ["trekking", "waterfalls", "caves", "photography"],
           season: "monsoon",
           familyFriendly: true,
           aiScore: 95,
           crowdLevel: "medium",
           bestTime: "6 AM - 6 PM",
           featured: true,
-          icon: "🏔️"
+          icon: "🏔️",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["train", "bus", "car"],
+          safety: 9,
+          weather: "pleasant",
+          reviews: 4.5,
+          highlights: ["Tiger's Leap", "Bhaja Caves", "Karla Caves"],
+          budget: "medium",
+          duration: "full_day",
+          bestMonths: ["Jun", "Jul", "Aug", "Sep"],
+          crowdRating: 3,
+          photoSpots: 8,
+          foodOptions: 7,
+          parking: "available"
         },
         {
           name: "Alibaug",
@@ -834,13 +1192,27 @@
           time: "2.5 hours",
           cost: 2000,
           category: "beach",
-          activities: ["beach", "water sports", "forts"],
+          activities: ["beach", "water sports", "forts", "boating"],
           season: "winter",
           familyFriendly: true,
           aiScore: 88,
           crowdLevel: "high",
           bestTime: "8 AM - 7 PM",
-          icon: "🏖️"
+          icon: "🏖️",
+          difficulty: "easy",
+          accessibility: "excellent",
+          transport: ["ferry", "bus", "car"],
+          safety: 8,
+          weather: "sunny",
+          reviews: 4.2,
+          highlights: ["Kolaba Fort", "Alibaug Beach", "Varsoli Beach"],
+          budget: "medium",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb"],
+          crowdRating: 4,
+          photoSpots: 9,
+          foodOptions: 8,
+          parking: "limited"
         },
         {
           name: "Matheran",
@@ -848,14 +1220,199 @@
           time: "2 hours",
           cost: 1200,
           category: "hill_station",
-          activities: ["toy train", "viewpoints", "horseback riding"],
+          activities: ["toy train", "viewpoints", "horseback riding", "nature walks"],
           season: "winter",
           familyFriendly: true,
           aiScore: 92,
           crowdLevel: "medium",
           bestTime: "sunrise to sunset",
           featured: true,
-          icon: "🚂"
+          icon: "🚂",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["train", "car"],
+          safety: 9,
+          weather: "cool",
+          reviews: 4.4,
+          highlights: ["Sunset Point", "Echo Point", "Charlotte Lake"],
+          budget: "low",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+          crowdRating: 3,
+          photoSpots: 10,
+          foodOptions: 6,
+          parking: "not_allowed"
+        },
+        {
+          name: "Khandala",
+          distance: "78 km",
+          time: "1.5 hours",
+          cost: 1300,
+          category: "hill_station",
+          activities: ["trekking", "waterfalls", "caves", "paragliding"],
+          season: "monsoon",
+          familyFriendly: true,
+          aiScore: 90,
+          crowdLevel: "medium",
+          bestTime: "6 AM - 8 PM",
+          icon: "⛰️",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["train", "bus", "car"],
+          safety: 8,
+          weather: "pleasant",
+          reviews: 4.3,
+          highlights: ["Rajmachi Fort", "Amrutanjan Point", "Shooting Point"],
+          budget: "medium",
+          duration: "full_day",
+          bestMonths: ["Jun", "Jul", "Aug", "Sep"],
+          crowdRating: 3,
+          photoSpots: 8,
+          foodOptions: 7,
+          parking: "available"
+        }
+      ],
+      Thane: [
+        {
+          name: "Matheran",
+          distance: "58 km",
+          time: "1.5 hours",
+          cost: 1000,
+          category: "hill_station",
+          activities: ["toy train", "viewpoints", "horseback riding", "nature walks"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 94,
+          crowdLevel: "medium",
+          bestTime: "sunrise to sunset",
+          featured: true,
+          icon: "🚂",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["train", "car"],
+          safety: 9,
+          weather: "cool",
+          reviews: 4.4,
+          highlights: ["Sunset Point", "Echo Point", "Charlotte Lake"],
+          budget: "low",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+          crowdRating: 3,
+          photoSpots: 10,
+          foodOptions: 6,
+          parking: "not_allowed"
+        },
+        {
+          name: "Lonavala",
+          distance: "65 km",
+          time: "1.5 hours",
+          cost: 1200,
+          category: "hill_station",
+          activities: ["trekking", "waterfalls", "caves", "photography"],
+          season: "monsoon",
+          familyFriendly: true,
+          aiScore: 93,
+          crowdLevel: "medium",
+          bestTime: "6 AM - 6 PM",
+          icon: "🏔️",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["train", "bus", "car"],
+          safety: 9,
+          weather: "pleasant",
+          reviews: 4.5,
+          highlights: ["Tiger's Leap", "Bhaja Caves", "Karla Caves"],
+          budget: "medium",
+          duration: "full_day",
+          bestMonths: ["Jun", "Jul", "Aug", "Sep"],
+          crowdRating: 3,
+          photoSpots: 8,
+          foodOptions: 7,
+          parking: "available"
+        },
+        {
+          name: "Kashid Beach",
+          distance: "85 km",
+          time: "2 hours",
+          cost: 1500,
+          category: "beach",
+          activities: ["beach", "water sports", "camping", "photography"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 89,
+          crowdLevel: "low",
+          bestTime: "7 AM - 7 PM",
+          icon: "🏖️",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["car", "bus"],
+          safety: 8,
+          weather: "sunny",
+          reviews: 4.3,
+          highlights: ["White Sand Beach", "Clear Waters", "Coconut Groves"],
+          budget: "medium",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb"],
+          crowdRating: 2,
+          photoSpots: 9,
+          foodOptions: 6,
+          parking: "available"
+        },
+        {
+          name: "Bhandardara",
+          distance: "95 km",
+          time: "2.5 hours",
+          cost: 1800,
+          category: "nature",
+          activities: ["camping", "boating", "waterfalls", "stargazing"],
+          season: "monsoon",
+          familyFriendly: true,
+          aiScore: 91,
+          crowdLevel: "low",
+          bestTime: "24 hours",
+          icon: "🏞️",
+          difficulty: "moderate",
+          accessibility: "fair",
+          transport: ["car", "bus"],
+          safety: 8,
+          weather: "cool",
+          reviews: 4.6,
+          highlights: ["Arthur Lake", "Randha Falls", "Ratangad Fort"],
+          budget: "medium",
+          duration: "overnight",
+          bestMonths: ["Jun", "Jul", "Aug", "Sep", "Oct"],
+          crowdRating: 2,
+          photoSpots: 10,
+          foodOptions: 5,
+          parking: "available"
+        },
+        {
+          name: "Karjat",
+          distance: "35 km",
+          time: "1 hour",
+          cost: 800,
+          category: "adventure",
+          activities: ["river rafting", "trekking", "camping", "rock climbing"],
+          season: "monsoon",
+          familyFriendly: false,
+          aiScore: 87,
+          crowdLevel: "medium",
+          bestTime: "8 AM - 6 PM",
+          icon: "🚣",
+          difficulty: "moderate",
+          accessibility: "good",
+          transport: ["train", "car", "bus"],
+          safety: 7,
+          weather: "pleasant",
+          reviews: 4.2,
+          highlights: ["Ulhas River", "Kondana Caves", "Bhivpuri Waterfalls"],
+          budget: "low",
+          duration: "half_day",
+          bestMonths: ["Jun", "Jul", "Aug", "Sep"],
+          crowdRating: 3,
+          photoSpots: 7,
+          foodOptions: 6,
+          parking: "available"
         }
       ],
       Delhi: [
@@ -865,14 +1422,28 @@
           time: "3 hours",
           cost: 2500,
           category: "heritage",
-          activities: ["Taj Mahal", "monuments", "shopping"],
+          activities: ["Taj Mahal", "monuments", "shopping", "photography"],
           season: "winter",
           familyFriendly: true,
           aiScore: 98,
           crowdLevel: "very_high",
           bestTime: "sunrise - sunset",
           featured: true,
-          icon: "🏛️"
+          icon: "🏛️",
+          difficulty: "easy",
+          accessibility: "excellent",
+          transport: ["train", "bus", "car"],
+          safety: 9,
+          weather: "pleasant",
+          reviews: 4.8,
+          highlights: ["Taj Mahal", "Agra Fort", "Fatehpur Sikri"],
+          budget: "high",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+          crowdRating: 5,
+          photoSpots: 10,
+          foodOptions: 9,
+          parking: "available"
         },
         {
           name: "Neemrana",
@@ -880,13 +1451,27 @@
           time: "2 hours",
           cost: 3000,
           category: "heritage",
-          activities: ["zip lining", "fort palace", "dining"],
+          activities: ["zip lining", "fort palace", "dining", "heritage walk"],
           season: "winter",
           familyFriendly: true,
           aiScore: 87,
           crowdLevel: "medium",
           bestTime: "10 AM - 6 PM",
-          icon: "🏰"
+          icon: "🏰",
+          difficulty: "easy",
+          accessibility: "good",
+          transport: ["car", "bus"],
+          safety: 9,
+          weather: "pleasant",
+          reviews: 4.4,
+          highlights: ["Neemrana Fort", "Zip Line", "Vintage Car Museum"],
+          budget: "high",
+          duration: "full_day",
+          bestMonths: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+          crowdRating: 3,
+          photoSpots: 8,
+          foodOptions: 8,
+          parking: "available"
         }
       ]
     };
@@ -1111,7 +1696,7 @@
       return labels[category] || category;
     }
 
-    // Update analytics (MongoDB + fallback)
+    // Update comprehensive analytics with extensive metrics
     function updateAnalytics(cityDestinations, mongoAnalytics = null) {
       let totalDest, avgCost, familyPercent, bestSeason;
       
@@ -1127,10 +1712,34 @@
         bestSeason = getMostCommonSeason(cityDestinations);
       }
 
+      // Primary metrics
       document.getElementById('totalDestinations').textContent = totalDest;
       document.getElementById('avgCost').textContent = `₹${avgCost}`;
       document.getElementById('familyScore').textContent = `${familyPercent}%`;
       document.getElementById('bestSeason').textContent = bestSeason;
+
+      // Extended metrics
+      const avgRating = (cityDestinations.reduce((sum, dest) => sum + (dest.reviews || 0), 0) / totalDest).toFixed(1);
+      const avgSafety = Math.round(cityDestinations.reduce((sum, dest) => sum + (dest.safety || 0), 0) / totalDest);
+      const avgPhotoSpots = Math.round(cityDestinations.reduce((sum, dest) => sum + (dest.photoSpots || 0), 0) / totalDest);
+      const avgDistance = Math.round(cityDestinations.reduce((sum, dest) => sum + parseInt(dest.distance), 0) / totalDest);
+      const avgTravelTime = Math.round(cityDestinations.reduce((sum, dest) => sum + parseFloat(dest.time), 0) / totalDest);
+      const avgFoodOptions = Math.round(cityDestinations.reduce((sum, dest) => sum + (dest.foodOptions || 0), 0) / totalDest);
+      
+      const accessibilityGood = cityDestinations.filter(dest => dest.accessibility === 'good' || dest.accessibility === 'excellent').length;
+      const accessibilityScore = Math.round((accessibilityGood / totalDest) * 100);
+      
+      const parkingAvailableCount = cityDestinations.filter(dest => dest.parking === 'available').length;
+      const parkingScore = Math.round((parkingAvailableCount / totalDest) * 100);
+
+      document.getElementById('avgRating').textContent = avgRating;
+      document.getElementById('avgSafety').textContent = avgSafety + '/10';
+      document.getElementById('avgPhotoSpots').textContent = avgPhotoSpots;
+      document.getElementById('avgDistance').textContent = avgDistance;
+      document.getElementById('avgTravelTime').textContent = avgTravelTime + 'h';
+      document.getElementById('avgFoodOptions').textContent = avgFoodOptions + '/10';
+      document.getElementById('accessibilityScore').textContent = accessibilityScore + '%';
+      document.getElementById('parkingAvailable').textContent = parkingScore + '%';
 
       updateCharts(cityDestinations);
     }
@@ -1437,6 +2046,270 @@
         navigator.clipboard.writeText(window.location.href);
         alert('📋 App link copied to clipboard!');
       }
+    }
+
+    // Advanced filtering functions
+    function toggleAdvancedFilters() {
+      const advancedFilters = document.getElementById('advancedFilters');
+      const toggleBtn = document.getElementById('advancedToggle');
+      
+      if (advancedFilters.classList.contains('active')) {
+        advancedFilters.classList.remove('active');
+        toggleBtn.textContent = 'Show Advanced Filters';
+      } else {
+        advancedFilters.classList.add('active');
+        toggleBtn.textContent = 'Hide Advanced Filters';
+      }
+    }
+
+    function applyFilters() {
+      const cityDests = destinations[currentCity] || [];
+      
+      // Get all filter values
+      const budget = document.getElementById('budgetFilter').value;
+      const duration = document.getElementById('durationFilter').value;
+      const difficulty = document.getElementById('difficultyFilter').value;
+      const season = document.getElementById('seasonFilter').value;
+      const transport = document.getElementById('transportFilter').value;
+      const minSafety = parseInt(document.getElementById('safetyFilter').value);
+      const minReviews = parseFloat(document.getElementById('reviewsFilter').value);
+      const crowd = document.getElementById('crowdFilter').value;
+      
+      // Apply filters
+      let filtered = cityDests.filter(dest => {
+        // Budget filter
+        if (budget !== 'all') {
+          if (budget === 'low' && dest.cost >= 1000) return false;
+          if (budget === 'medium' && (dest.cost < 1000 || dest.cost > 2000)) return false;
+          if (budget === 'high' && dest.cost <= 2000) return false;
+        }
+        
+        // Duration filter
+        if (duration !== 'all' && dest.duration !== duration) return false;
+        
+        // Difficulty filter
+        if (difficulty !== 'all' && dest.difficulty !== difficulty) return false;
+        
+        // Season filter
+        if (season !== 'all' && dest.season !== season) return false;
+        
+        // Transport filter
+        if (transport !== 'all' && !dest.transport.includes(transport)) return false;
+        
+        // Safety filter
+        if (minSafety > 0 && (dest.safety || 0) < minSafety) return false;
+        
+        // Reviews filter
+        if (minReviews > 0 && (dest.reviews || 0) < minReviews) return false;
+        
+        // Crowd filter
+        if (crowd !== 'all' && dest.crowdLevel !== crowd) return false;
+        
+        return true;
+      });
+      
+      generateRecommendations(filtered);
+      updateAnalytics(filtered);
+      
+      // Show results count
+      const resultCount = filtered.length;
+      showFilterResults(resultCount);
+    }
+
+    function clearFilters() {
+      // Reset all filter selects
+      document.getElementById('budgetFilter').value = 'all';
+      document.getElementById('durationFilter').value = 'all';
+      document.getElementById('difficultyFilter').value = 'all';
+      document.getElementById('seasonFilter').value = 'all';
+      document.getElementById('transportFilter').value = 'all';
+      document.getElementById('safetyFilter').value = '0';
+      document.getElementById('reviewsFilter').value = '0';
+      document.getElementById('crowdFilter').value = 'all';
+      
+      // Reset category filters
+      document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.classList.remove('active');
+        if (pill.dataset.filter === 'all') {
+          pill.classList.add('active');
+        }
+      });
+      
+      // Show all destinations
+      const cityDests = destinations[currentCity] || [];
+      generateRecommendations(cityDests);
+      updateAnalytics(cityDests);
+    }
+
+    function sortDestinations(criteria) {
+      const cityDests = destinations[currentCity] || [];
+      
+      let sorted = [...cityDests].sort((a, b) => {
+        switch(criteria) {
+          case 'distance':
+            return parseInt(a.distance) - parseInt(b.distance);
+          case 'cost':
+            return a.cost - b.cost;
+          case 'rating':
+            return (b.reviews || 0) - (a.reviews || 0);
+          default:
+            return b.aiScore - a.aiScore;
+        }
+      });
+      
+      generateRecommendations(sorted);
+    }
+
+    function showFilterResults(count) {
+      // Create or update result indicator
+      let indicator = document.getElementById('filterResults');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'filterResults';
+        indicator.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: var(--accent-blue);
+          color: white;
+          padding: 1rem 2rem;
+          border-radius: 20px;
+          font-weight: 600;
+          z-index: 3000;
+          animation: fadeInUp 0.3s ease;
+        `;
+        document.body.appendChild(indicator);
+      }
+      
+      indicator.textContent = `Found ${count} destinations`;
+      indicator.style.display = 'block';
+      
+      setTimeout(() => {
+        indicator.style.display = 'none';
+      }, 2000);
+    }
+
+    // Enhanced modal with comprehensive details
+    function openDestinationModal(name) {
+      const dest = destinations[currentCity]?.find(d => d.name === name);
+      if (!dest) return;
+
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+
+      content.innerHTML = `
+        <div style="padding: 3rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2.5rem;">
+            <div>
+              <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.8rem;">${dest.icon || getIconByCategory(dest.category)} ${dest.name}</h2>
+              <p style="color: var(--text-secondary); font-size: 1.2rem; font-weight: 500;">${dest.distance} from ${currentCity} • ${dest.time} travel</p>
+            </div>
+            <button onclick="closeModal()" style="background: var(--surface-hover); border: 1px solid var(--border-subtle); border-radius: 50%; width: 50px; height: 50px; cursor: pointer; color: var(--text-primary); font-size: 1.2rem; transition: all 0.3s ease;">✕</button>
+          </div>
+          
+          <!-- Comprehensive Metrics Grid -->
+          <div class="modal-detail-grid">
+            <div class="detail-item">
+              <span class="detail-icon">💰</span>
+              <div class="detail-value">₹${dest.cost}</div>
+              <div class="detail-label">Cost</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">⭐</span>
+              <div class="detail-value">${dest.reviews || 'N/A'}</div>
+              <div class="detail-label">Rating</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🛡️</span>
+              <div class="detail-value">${dest.safety || 'N/A'}/10</div>
+              <div class="detail-label">Safety</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🎯</span>
+              <div class="detail-value">${dest.difficulty}</div>
+              <div class="detail-label">Difficulty</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">⏱️</span>
+              <div class="detail-value">${dest.duration}</div>
+              <div class="detail-label">Duration</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">♿</span>
+              <div class="detail-value">${dest.accessibility}</div>
+              <div class="detail-label">Accessibility</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">📸</span>
+              <div class="detail-value">${dest.photoSpots || 'N/A'}/10</div>
+              <div class="detail-label">Photo Spots</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🍽️</span>
+              <div class="detail-value">${dest.foodOptions || 'N/A'}/10</div>
+              <div class="detail-label">Food Options</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🅿️</span>
+              <div class="detail-value">${dest.parking}</div>
+              <div class="detail-label">Parking</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">👥</span>
+              <div class="detail-value">${dest.crowdLevel}</div>
+              <div class="detail-label">Crowd Level</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🌤️</span>
+              <div class="detail-value">${dest.weather}</div>
+              <div class="detail-label">Weather</div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-icon">🤖</span>
+              <div class="detail-value">${dest.aiScore}%</div>
+              <div class="detail-label">AI Match</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2.5rem;">
+            <h3 style="margin-bottom: 1.2rem; color: var(--accent-blue); font-size: 1.4rem; font-weight: 700;">🚗 Transportation Options</h3>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              ${dest.transport.map(method => `<span style="background: var(--accent-green); color: white; padding: 0.6rem 1.2rem; border-radius: 20px; font-size: 1rem; font-weight: 600;">${method}</span>`).join('')}
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2.5rem;">
+            <h3 style="margin-bottom: 1.2rem; color: var(--accent-blue); font-size: 1.4rem; font-weight: 700;">🎯 Activities & Attractions</h3>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              ${dest.activities.map(activity => `<span style="background: var(--accent-blue); color: white; padding: 0.6rem 1.2rem; border-radius: 20px; font-size: 1rem; font-weight: 600;">${activity}</span>`).join('')}
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2.5rem;">
+            <h3 style="margin-bottom: 1.2rem; color: var(--accent-blue); font-size: 1.4rem; font-weight: 700;">🌟 Key Highlights</h3>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              ${(dest.highlights || []).map(highlight => `<span style="background: var(--accent-orange); color: white; padding: 0.6rem 1.2rem; border-radius: 20px; font-size: 1rem; font-weight: 600;">${highlight}</span>`).join('')}
+            </div>
+          </div>
+
+          <div style="background: var(--surface-hover); border: 1px solid var(--border-subtle); border-radius: var(--radius-medium); padding: 2rem; margin-bottom: 2.5rem;">
+            <h4 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1.2rem; font-weight: 700;">🤖 Smart Recommendations</h4>
+            <p style="margin-bottom: 1.2rem; font-size: 1.1rem; line-height: 1.6;">Perfect destination for ${dest.familyFriendly ? 'family trips with children' : 'adult adventures'}. Best visited during ${dest.season} season.</p>
+            <p style="margin-bottom: 0.8rem; font-weight: 600;">Best Time to Visit:</p>
+            <p style="margin-bottom: 0.8rem;">${dest.bestTime}</p>
+            <p style="margin-bottom: 0.8rem; font-weight: 600;">Optimal Months:</p>
+            <p>${(dest.bestMonths || []).join(', ')}</p>
+          </div>
+
+          <div style="display: flex; gap: 1.2rem;">
+            <button onclick="planItinerary('${dest.name}')" style="flex: 1; background: var(--accent-blue); color: white; border: none; padding: 1.2rem; border-radius: var(--radius-medium); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">Plan Itinerary</button>
+            <button onclick="shareDestination('${dest.name}')" style="flex: 1; background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 1.2rem; border-radius: var(--radius-medium); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">Share</button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
     }
 
     // Initialize app when DOM is loaded
