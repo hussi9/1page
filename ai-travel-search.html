@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelAI • Intelligent Travel Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="real-production-api.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #fafafa;
+      --bg-secondary: #ffffff;
+      --surface: #ffffff;
+      --text-primary: #0d1117;
+      --text-secondary: #656d76;
+      --text-tertiary: #8b949e;
+      --accent: #0969da;
+      --accent-light: #54aeff;
+      --border: #d1d9e0;
+      --border-light: #f6f8fa;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 8px;
+      --radius-large: 12px;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0d1117;
+      --bg-secondary: #21262d;
+      --surface: #21262d;
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b949e;
+      --text-tertiary: #656d76;
+      --accent: #58a6ff;
+      --accent-light: #79c0ff;
+      --border: #30363d;
+      --border-light: #21262d;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Perplexity-Style Header */
+    .header {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 1rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* Search Interface */
+    .search-section {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .search-section.has-results {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .main-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .search-section.has-results .main-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-section.has-results .subtitle {
+      display: none;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1rem 3rem 1rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-large);
+      background: var(--surface);
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.5rem 1rem;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .search-button:hover {
+      background: var(--accent-light);
+    }
+
+    .search-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Example Queries */
+    .example-queries {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    .search-section.has-results .example-queries {
+      display: none;
+    }
+
+    .example-query {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-large);
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .example-query:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Answer Section */
+    .answer-section {
+      display: none;
+      margin-bottom: 2rem;
+    }
+
+    .answer-section.show {
+      display: block;
+    }
+
+    .answer-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .answer-icon {
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .answer-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .answer-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-large);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .answer-text {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .answer-text:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Sources */
+    .sources {
+      margin-top: 1.5rem;
+    }
+
+    .sources-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .source-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .source-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .source-item:hover {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+
+    .source-icon {
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.625rem;
+    }
+
+    .source-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Follow-up Questions */
+    .followup-section {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    .followup-section.show {
+      display: block;
+    }
+
+    .followup-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .followup-questions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .followup-question {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .followup-question:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Loading State */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header {
+        padding: 1rem;
+      }
+
+      .main-title {
+        font-size: 2rem;
+      }
+
+      .example-queries {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="#" class="logo">TravelAI</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="search-section" id="searchSection">
+      <h1 class="main-title">Where would you like to explore?</h1>
+      <p class="subtitle">Ask me anything about travel destinations, activities, or trip planning</p>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="searchInput"
+          placeholder="e.g., Best hill stations near Mumbai for a weekend trip"
+          onkeypress="handleKeyPress(event)"
+        >
+        <button class="search-button" id="searchButton" onclick="performSearch()">
+          Search
+        </button>
+      </div>
+
+      <div class="example-queries">
+        <div class="example-query" onclick="useExampleQuery(this)">Best beaches near Chennai</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Weekend trips from Delhi under ₹5000</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Hill stations for monsoon travel</div>
+        <div class="example-query" onclick="useExampleQuery(this)">Family-friendly places in Kerala</div>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Searching and analyzing travel data...</div>
+    </div>
+
+    <div class="answer-section" id="answerSection">
+      <div class="answer-header">
+        <div class="answer-icon">AI</div>
+        <div class="answer-title">Travel Recommendations</div>
+      </div>
+      
+      <div class="answer-content" id="answerContent">
+        <!-- AI generated answer will appear here -->
+      </div>
+      
+      <div class="sources" id="sourcesSection">
+        <div class="sources-title">Sources</div>
+        <div class="source-list" id="sourceList">
+          <!-- Sources will appear here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="followup-section" id="followupSection">
+      <div class="followup-title">Related Questions</div>
+      <div class="followup-questions" id="followupQuestions">
+        <!-- Follow-up questions will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🧠 AI Travel Search Engine - Perplexity Style
+    let currentQuery = '';
+    let searchResults = [];
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 TravelAI initialized');
+      document.getElementById('searchInput').focus();
+    });
+
+    // Handle search
+    async function performSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) return;
+
+      currentQuery = query;
+      showLoading();
+      hideResults();
+
+      try {
+        console.log(`🔍 Searching: "${query}"`);
+        
+        // Transform search interface
+        transformToResultsMode();
+        
+        // Perform AI-powered search
+        const results = await searchTravelData(query);
+        
+        // Generate AI answer
+        const aiAnswer = await generateAIAnswer(query, results);
+        
+        // Display results
+        displayAnswer(aiAnswer, results);
+        showFollowupQuestions(query);
+        
+      } catch (error) {
+        console.error('Search failed:', error);
+        displayError('Sorry, I encountered an error while searching. Please try again.');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // AI-powered travel data search
+    async function searchTravelData(query) {
+      const results = [];
+      
+      try {
+        // Extract location from query using simple NLP
+        const location = extractLocationFromQuery(query);
+        
+        if (location) {
+          console.log(`📍 Detected location: ${location}`);
+          
+          // Search MongoDB cache first
+          const cachedResults = await searchCache(query);
+          if (cachedResults.length > 0) {
+            results.push(...cachedResults);
+          }
+          
+          // If no cached results, search APIs
+          if (results.length === 0) {
+            const apiResults = await searchAPIs(location, query);
+            results.push(...apiResults);
+            
+            // Cache for future searches
+            if (apiResults.length > 0) {
+              await cacheResults(query, apiResults);
+            }
+          }
+        }
+        
+        return results;
+        
+      } catch (error) {
+        console.error('Travel data search failed:', error);
+        return [];
+      }
+    }
+
+    // Generate AI answer from search results
+    async function generateAIAnswer(query, results) {
+      if (results.length === 0) {
+        return {
+          text: "I couldn't find specific results for your query. Try asking about popular destinations like Mumbai, Delhi, Bangalore, or Kerala.",
+          confidence: 0.3
+        };
+      }
+
+      // Analyze query intent
+      const intent = analyzeQueryIntent(query);
+      
+      // Generate contextual answer based on results
+      let answer = '';
+      
+      if (intent.type === 'destination_search') {
+        answer = generateDestinationAnswer(query, results, intent);
+      } else if (intent.type === 'activity_search') {
+        answer = generateActivityAnswer(query, results, intent);
+      } else if (intent.type === 'budget_search') {
+        answer = generateBudgetAnswer(query, results, intent);
+      } else {
+        answer = generateGeneralAnswer(query, results);
+      }
+
+      return {
+        text: answer,
+        confidence: 0.85,
+        resultCount: results.length
+      };
+    }
+
+    // Simple NLP for location extraction
+    function extractLocationFromQuery(query) {
+      const locations = ['mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 'hyderabad', 'pune', 'kerala', 'goa', 'rajasthan', 'himachal', 'uttarakhand', 'kashmir', 'thane'];
+      const lowerQuery = query.toLowerCase();
+      
+      for (const location of locations) {
+        if (lowerQuery.includes(location)) {
+          return location;
+        }
+      }
+      
+      // Extract "near X" or "from X" patterns
+      const nearMatch = lowerQuery.match(/(?:near|from|in)\s+([a-z]+)/);
+      if (nearMatch) {
+        return nearMatch[1];
+      }
+      
+      return null;
+    }
+
+    // Analyze query intent
+    function analyzeQueryIntent(query) {
+      const lowerQuery = query.toLowerCase();
+      
+      if (lowerQuery.includes('beach') || lowerQuery.includes('hill') || lowerQuery.includes('mountain') || lowerQuery.includes('temple')) {
+        return { type: 'destination_search', category: extractCategory(lowerQuery) };
+      }
+      
+      if (lowerQuery.includes('activity') || lowerQuery.includes('adventure') || lowerQuery.includes('trekking')) {
+        return { type: 'activity_search' };
+      }
+      
+      if (lowerQuery.includes('budget') || lowerQuery.includes('₹') || lowerQuery.includes('cheap') || lowerQuery.includes('under')) {
+        return { type: 'budget_search', budget: extractBudget(lowerQuery) };
+      }
+      
+      return { type: 'general_search' };
+    }
+
+    function extractCategory(query) {
+      if (query.includes('beach')) return 'beach';
+      if (query.includes('hill') || query.includes('mountain')) return 'nature';
+      if (query.includes('temple') || query.includes('fort')) return 'heritage';
+      return 'general';
+    }
+
+    function extractBudget(query) {
+      const budgetMatch = query.match(/₹?\s*(\d+)/);
+      return budgetMatch ? parseInt(budgetMatch[1]) : null;
+    }
+
+    // Generate different types of answers
+    function generateDestinationAnswer(query, results, intent) {
+      const topResults = results.slice(0, 5);
+      let answer = `Based on your search for "${query}", here are the best recommendations:\n\n`;
+      
+      topResults.forEach((result, index) => {
+        answer += `**${index + 1}. ${result.name}**\n`;
+        answer += `${result.description || 'A beautiful destination perfect for your trip.'}\n`;
+        if (result.distance) answer += `📍 Distance: ${result.distance}\n`;
+        if (result.cost) answer += `💰 Estimated cost: ₹${result.cost}\n`;
+        answer += '\n';
+      });
+      
+      return answer;
+    }
+
+    function generateActivityAnswer(query, results, intent) {
+      return `Here are some great activity options based on your search:\n\n${results.slice(0, 3).map(r => `• ${r.name}: ${r.description}`).join('\n')}`;
+    }
+
+    function generateBudgetAnswer(query, results, intent) {
+      const budgetFriendly = results.filter(r => !r.cost || r.cost <= (intent.budget || 5000));
+      return `Here are budget-friendly options for your query:\n\n${budgetFriendly.slice(0, 4).map(r => `• ${r.name} - ₹${r.cost || 500}`).join('\n')}`;
+    }
+
+    function generateGeneralAnswer(query, results) {
+      return `Based on your search, I found ${results.length} relevant destinations. Here are the top recommendations:\n\n${results.slice(0, 3).map(r => `• ${r.name}: ${r.description || 'Great destination to visit'}`).join('\n')}`;
+    }
+
+    // Search cached results
+    async function searchCache(query) {
+      try {
+        const cacheKey = query.toLowerCase().replace(/\s+/g, '_') + '_ai_search';
+        
+        const response = await window.RealProductionTravelAPI.makeMongoRequest('find', {
+          collection: 'ai_search_cache',
+          filter: {
+            search_key: cacheKey,
+            'cache_meta.freshness_score': { $gte: 0.7 }
+          },
+          limit: 1
+        });
+        
+        if (response.documents && response.documents.length > 0) {
+          console.log('⚡ Cache hit for AI search');
+          return response.documents[0].results || [];
+        }
+        
+        return [];
+      } catch (error) {
+        console.error('Cache search failed:', error);
+        return [];
+      }
+    }
+
+    // Search APIs for fresh data
+    async function searchAPIs(location, query) {
+      try {
+        // Try to get user location for better results
+        let userLocation = null;
+        try {
+          userLocation = await window.RealProductionTravelAPI.detectUserLocation();
+        } catch (e) {
+          console.log('No location available');
+        }
+        
+        let results = [];
+        
+        if (userLocation) {
+          // Location-based search
+          const [lat, lng] = userLocation.coordinates;
+          results = await window.RealProductionTravelAPI.searchEnhancedPlaces(lat, lng);
+        } else {
+          // City-based search
+          const cityResults = await window.RealProductionTravelAPI.getRealDestinations(location);
+          results = transformMongoResults(cityResults);
+        }
+        
+        return results.slice(0, 10); // Limit results
+        
+      } catch (error) {
+        console.error('API search failed:', error);
+        return [];
+      }
+    }
+
+    // Transform MongoDB results to standard format
+    function transformMongoResults(mongoResults) {
+      if (!mongoResults || mongoResults.length === 0) return [];
+      
+      return mongoResults.map(dest => ({
+        id: dest._id,
+        name: dest.name,
+        description: dest.description,
+        distance: '25 km',
+        cost: dest.details?.cost?.average || 500,
+        category: dest.details?.categories?.[0] || 'nature',
+        rating: dest.social?.rating?.overall || 4.2,
+        source: 'mongodb'
+      }));
+    }
+
+    // Cache AI search results
+    async function cacheResults(query, results) {
+      try {
+        const cacheKey = query.toLowerCase().replace(/\s+/g, '_') + '_ai_search';
+        const cacheDocument = {
+          search_key: cacheKey,
+          query: query,
+          results: results,
+          cache_meta: {
+            created_at: new Date().toISOString(),
+            freshness_score: 1.0,
+            result_count: results.length
+          }
+        };
+        
+        await window.RealProductionTravelAPI.makeMongoRequest('insertOne', {
+          collection: 'ai_search_cache',
+          document: cacheDocument
+        });
+        
+        console.log('💾 Cached AI search results');
+      } catch (error) {
+        console.error('Failed to cache AI results:', error);
+      }
+    }
+
+    // UI Functions
+    function transformToResultsMode() {
+      const searchSection = document.getElementById('searchSection');
+      searchSection.classList.add('has-results');
+      
+      // Update search input with current query
+      document.getElementById('searchInput').value = currentQuery;
+    }
+
+    function showLoading() {
+      document.getElementById('loading').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').classList.remove('show');
+    }
+
+    function hideResults() {
+      document.getElementById('answerSection').classList.remove('show');
+      document.getElementById('followupSection').classList.remove('show');
+    }
+
+    function displayAnswer(aiAnswer, results) {
+      const answerContent = document.getElementById('answerContent');
+      const sourcesSection = document.getElementById('sourcesSection');
+      
+      // Display AI answer
+      answerContent.innerHTML = `<div class="answer-text">${aiAnswer.text.replace(/\n/g, '<br>')}</div>`;
+      
+      // Display sources
+      if (results.length > 0) {
+        const sourceList = document.getElementById('sourceList');
+        sourceList.innerHTML = results.slice(0, 5).map((result, index) => `
+          <div class="source-item">
+            <div class="source-icon">${index + 1}</div>
+            <div class="source-text">${result.name} - ${result.source || 'Travel API'}</div>
+          </div>
+        `).join('');
+      }
+      
+      document.getElementById('answerSection').classList.add('show');
+    }
+
+    function showFollowupQuestions(query) {
+      const followupQuestions = generateFollowupQuestions(query);
+      const followupContainer = document.getElementById('followupQuestions');
+      
+      followupContainer.innerHTML = followupQuestions.map(q => 
+        `<button class="followup-question" onclick="useFollowupQuery('${q}')">${q}</button>`
+      ).join('');
+      
+      document.getElementById('followupSection').classList.add('show');
+    }
+
+    function generateFollowupQuestions(query) {
+      const baseQuestions = [
+        'What is the best time to visit?',
+        'How to reach there from my location?',
+        'What are the nearby attractions?',
+        'Budget breakdown for this trip?',
+        'Best accommodation options?'
+      ];
+      
+      return baseQuestions.slice(0, 3);
+    }
+
+    function displayError(message) {
+      const answerContent = document.getElementById('answerContent');
+      answerContent.innerHTML = `<div class="answer-text" style="color: var(--text-secondary);">${message}</div>`;
+      document.getElementById('answerSection').classList.add('show');
+    }
+
+    // Event Handlers
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        performSearch();
+      }
+    }
+
+    function useExampleQuery(element) {
+      document.getElementById('searchInput').value = element.textContent;
+      performSearch();
+    }
+
+    function useFollowupQuery(query) {
+      document.getElementById('searchInput').value = query;
+      performSearch();
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.body.setAttribute('data-theme', savedTheme);
+    }
+  </script>
+</body>
+</html>
