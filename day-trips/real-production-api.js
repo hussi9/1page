@@ -260,6 +260,8 @@ class RealProductionTravelAPI {
           openingHours: props.opening_hours || '',
           address: props.formatted || '',
           rating: props.rating || 0,
+          image: props.image || null, // Real image from Geoapify
+          photos: props.photos || [], // Multiple photos if available
           source: 'geoapify'
         };
       }).sort((a, b) => a.distance - b.distance).slice(0, 30);
@@ -555,6 +557,7 @@ class RealProductionTravelAPI {
                   rating: tripAdvisorData.rating || place.rating,
                   reviews: tripAdvisorData.reviewCount || 0,
                   photos: tripAdvisorData.photos || [],
+                  image: tripAdvisorData.photos?.[0] || place.image, // Use first TripAdvisor photo
                   description: tripAdvisorData.description || place.description,
                   enhanced: true,
                   source: 'geoapify+tripadvisor'
