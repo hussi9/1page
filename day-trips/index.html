@@ -6,7 +6,7 @@
   <title>Smart Day Trips • AI-Powered Travel Discovery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../smart-location-api.js"></script>
   <script src="./api-client.js"></script>
@@ -18,39 +18,71 @@
     }
 
     :root {
-      --primary-bg: #000000;
-      --secondary-bg: #1d1d1f;
-      --card-bg: #2c2c2e;
-      --text-primary: #f5f5f7;
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0a; 
+      --bg-tertiary: #1a1a1a;
+      --surface: rgba(30, 30, 30, 0.8);
+      --surface-hover: rgba(50, 50, 50, 0.9);
+      --text-primary: #ffffff;
       --text-secondary: #a1a1a6;
-      --accent-blue: #007aff;
-      --accent-green: #30d158;
-      --accent-orange: #ff9500;
-      --accent-purple: #af52de;
-      --accent-red: #ff3b30;
-      --border-color: rgba(255, 255, 255, 0.1);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --blur: blur(20px);
+      --text-tertiary: #6e6e73;
+      --accent-blue: #0a84ff;
+      --accent-green: #32d74b;
+      --accent-orange: #ff9f0a;
+      --accent-purple: #bf5af2;
+      --accent-pink: #ff2d92;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.6);
+      --blur-light: blur(10px);
+      --blur-heavy: blur(30px);
+      --radius-small: 12px;
+      --radius-medium: 16px;
+      --radius-large: 24px;
     }
 
     [data-theme="light"] {
-      --primary-bg: #f5f5f7;
-      --secondary-bg: #ffffff;
-      --card-bg: #ffffff;
+      --bg-primary: #f2f2f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f5f5f7;
+      --surface: rgba(255, 255, 255, 0.8);
+      --surface-hover: rgba(240, 240, 245, 0.9);
       --text-primary: #1d1d1f;
       --text-secondary: #86868b;
-      --border-color: rgba(0, 0, 0, 0.1);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-      --glass-bg: rgba(255, 255, 255, 0.8);
+      --text-tertiary: #a1a1a6;
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.12);
+      --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.2);
     }
 
     body {
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--primary-bg);
+      background: var(--bg-primary);
       color: var(--text-primary);
       overflow-x: hidden;
       scroll-behavior: smooth;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-tertiary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
     }
 
     /* Navigation */
@@ -59,10 +91,11 @@
       top: 0;
       left: 0;
       right: 0;
-      background: var(--glass-bg);
-      backdrop-filter: var(--blur);
-      border-bottom: 1px solid var(--border-color);
+      background: var(--surface);
+      backdrop-filter: var(--blur-heavy);
+      border-bottom: 1px solid var(--border-subtle);
       z-index: 1000;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .nav-content {
@@ -75,8 +108,8 @@
     }
 
     .logo {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.4rem;
+      font-weight: 700;
       color: var(--text-primary);
       display: flex;
       align-items: center;
@@ -85,25 +118,28 @@
 
     .nav-controls {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       align-items: center;
     }
 
     .control-btn {
-      background: var(--glass-bg);
-      border: 1px solid var(--border-color);
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
       color: var(--text-primary);
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: var(--blur);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      backdrop-filter: var(--blur-light);
+      font-weight: 500;
+      font-size: 0.9rem;
     }
 
     .control-btn:hover {
       background: var(--accent-blue);
       border-color: var(--accent-blue);
       transform: scale(1.05);
+      box-shadow: var(--shadow-medium);
     }
 
     /* Hero Section */
@@ -113,7 +149,11 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+      background: 
+        radial-gradient(circle at 20% 80%, var(--accent-purple) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, var(--accent-blue) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, var(--accent-pink) 0%, transparent 50%),
+        var(--bg-primary);
       position: relative;
       overflow: hidden;
     }
@@ -125,9 +165,15 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: radial-gradient(circle at 30% 50%, var(--accent-blue) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 80%, var(--accent-purple) 0%, transparent 50%);
-      opacity: 0.1;
+      background: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-opacity='0.03'%3E%3Cpolygon fill='%23ffffff' points='50 0 60 40 100 50 60 60 50 100 40 60 0 50 40 40'/%3E%3C/g%3E%3C/svg%3E") repeat;
+      opacity: 0.4;
+      animation: float 20s infinite linear;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-100px, -100px) rotate(360deg); }
     }
 
     .hero-content {
@@ -139,25 +185,28 @@
     }
 
     .hero h1 {
-      font-size: clamp(3rem, 8vw, 6rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 800;
+      margin-bottom: 1.5rem;
       background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
       animation: fadeInUp 1s ease 0.3s both;
     }
 
-    .hero p {
-      font-size: 1.5rem;
+    .hero-subtitle {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
       color: var(--text-secondary);
-      margin-bottom: 2rem;
+      margin-bottom: 3rem;
+      font-weight: 500;
       animation: fadeInUp 1s ease 0.6s both;
     }
 
-    /* Smart Search */
-    .smart-search {
-      max-width: 800px;
+    /* Search Section */
+    .search-section {
+      max-width: 700px;
       margin: 0 auto 3rem;
       animation: fadeInUp 1s ease 0.9s both;
     }
@@ -169,20 +218,27 @@
 
     .search-input {
       width: 100%;
-      padding: 1.5rem 4rem 1.5rem 2rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+      padding: 1.8rem 4rem 1.8rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
       color: var(--text-primary);
-      font-size: 1.2rem;
-      backdrop-filter: var(--blur);
-      transition: all 0.3s ease;
+      font-size: 1.3rem;
+      font-weight: 500;
+      backdrop-filter: var(--blur-heavy);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--shadow-light);
     }
 
     .search-input:focus {
       outline: none;
       border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2), var(--shadow-medium);
+      transform: scale(1.02);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary);
     }
 
     .search-btn {
@@ -193,283 +249,332 @@
       background: var(--accent-blue);
       border: none;
       color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 15px;
+      padding: 1rem 1.8rem;
+      border-radius: var(--radius-medium);
       cursor: pointer;
-      transition: all 0.3s ease;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--shadow-medium);
     }
 
     .search-btn:hover {
-      background: #005ecb;
+      background: #0066cc;
       transform: translateY(-50%) scale(1.05);
+      box-shadow: var(--shadow-heavy);
     }
 
-    .quick-cities {
+    /* Filter Pills */
+    .filters {
       display: flex;
       justify-content: center;
       gap: 1rem;
       flex-wrap: wrap;
+      animation: fadeInUp 1s ease 1.2s both;
     }
 
-    .city-pill {
-      padding: 0.75rem 1.5rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 50px;
+    .filter-pill {
+      padding: 1rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 30px;
       color: var(--text-primary);
       cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: var(--blur);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      backdrop-filter: var(--blur-light);
+      font-weight: 600;
+      font-size: 1rem;
+      box-shadow: var(--shadow-light);
     }
 
-    .city-pill:hover {
+    .filter-pill:hover,
+    .filter-pill.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      transform: scale(1.1);
+      box-shadow: var(--shadow-medium);
+      color: white;
+    }
+
+    .filter-pill.kid-friendly:hover,
+    .filter-pill.kid-friendly.active {
       background: var(--accent-green);
       border-color: var(--accent-green);
-      transform: scale(1.1);
     }
 
-    /* Analytics Dashboard */
+    .filter-pill.adventurous:hover,
+    .filter-pill.adventurous.active {
+      background: var(--accent-orange);
+      border-color: var(--accent-orange);
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    /* Destinations Grid - Apple TV Style */
+    .destinations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .destination-card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      backdrop-filter: var(--blur-heavy);
+      box-shadow: var(--shadow-light);
+      height: 480px;
+    }
+
+    .destination-card:hover {
+      transform: scale(1.05) translateY(-20px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--accent-blue);
+    }
+
+    .destination-card.featured {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .destination-card.featured:hover {
+      transform: scale(1.08) translateY(-25px);
+    }
+
+    .destination-card.featured::before {
+      content: '⭐ Featured Destination';
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      backdrop-filter: var(--blur-light);
+      z-index: 2;
+    }
+
+    .card-image {
+      height: 250px;
+      background: linear-gradient(135deg, 
+        var(--accent-blue) 0%, 
+        var(--accent-purple) 25%,
+        var(--accent-pink) 50%,
+        var(--accent-orange) 75%,
+        var(--accent-green) 100%
+      );
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-image::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill-opacity='0.1'%3E%3Ccircle fill='%23ffffff' cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E") repeat,
+        linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+      animation: shimmer 3s infinite ease-in-out;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+
+    .card-image::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+    }
+
+    .card-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+      color: white;
+      font-size: 3rem;
+      opacity: 0.7;
+    }
+
+    .card-content {
+      padding: 2rem;
+      height: 230px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card-meta {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--surface-hover);
+      color: var(--text-secondary);
+      padding: 0.4rem 1rem;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+    }
+
+    .destination-card:hover .tag {
+      background: var(--accent-blue);
+      color: white;
+      border-color: var(--accent-blue);
+    }
+
+    .card-button {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: var(--radius-medium);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--shadow-light);
+    }
+
+    .card-button:hover {
+      background: #0066cc;
+      transform: scale(1.05);
+      box-shadow: var(--shadow-medium);
+    }
+
+    /* Analytics Section */
     .analytics-section {
       max-width: 1400px;
-      margin: 4rem auto;
+      margin: 6rem auto;
       padding: 0 2rem;
     }
 
     .section-title {
-      font-size: 2.5rem;
-      font-weight: 600;
+      font-size: 3rem;
+      font-weight: 800;
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 4rem;
       background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
     }
 
     .analytics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
-      margin-bottom: 3rem;
+      margin-bottom: 4rem;
     }
 
     .analytics-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 2rem;
-      backdrop-filter: var(--blur);
-      transition: all 0.3s ease;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
+      padding: 2.5rem;
+      backdrop-filter: var(--blur-heavy);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: var(--shadow-light);
     }
 
     .analytics-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-heavy);
+      border-color: var(--accent-blue);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .card-title {
-      font-size: 1.2rem;
-      font-weight: 600;
+      font-size: 1.3rem;
+      font-weight: 700;
     }
 
     .card-icon {
-      font-size: 1.5rem;
+      font-size: 2rem;
     }
 
     .metric-value {
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-size: 3.5rem;
+      font-weight: 800;
       color: var(--accent-blue);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.02em;
     }
 
     .metric-label {
       color: var(--text-secondary);
-      font-size: 0.9rem;
+      font-size: 1rem;
+      font-weight: 500;
     }
 
     /* Chart Container */
     .chart-container {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
+      padding: 2.5rem;
       margin-bottom: 2rem;
+      backdrop-filter: var(--blur-heavy);
+      box-shadow: var(--shadow-light);
     }
 
     .chart-canvas {
       max-height: 400px;
-    }
-
-    /* Smart Recommendations */
-    .recommendations-section {
-      max-width: 1400px;
-      margin: 4rem auto;
-      padding: 0 2rem;
-    }
-
-    .recommendations-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 2rem;
-    }
-
-    .recommendation-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      position: relative;
-    }
-
-    .recommendation-card:hover {
-      transform: scale(1.05) translateY(-10px);
-      box-shadow: var(--shadow);
-    }
-
-    .rec-header {
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-      padding: 1.5rem;
-      color: white;
-      position: relative;
-    }
-
-    .rec-score {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      font-weight: 600;
-      backdrop-filter: var(--blur);
-    }
-
-    .rec-content {
-      padding: 1.5rem;
-    }
-
-    .rec-tags {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .tag {
-      background: var(--glass-bg);
-      color: var(--text-secondary);
-      padding: 0.25rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      border: 1px solid var(--border-color);
-    }
-
-    .ai-insight {
-      background: var(--glass-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 15px;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-
-    .ai-insight-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-      color: var(--accent-purple);
-      font-weight: 500;
-    }
-
-    /* Interactive Features */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      margin: 3rem 0;
-    }
-
-    .feature-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 2rem;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow);
-    }
-
-    .feature-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .fade-in {
-      animation: fadeInUp 0.6s ease forwards;
-    }
-
-    .loading {
-      animation: pulse 1.5s infinite;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-content {
-        padding: 1rem;
-      }
-
-      .hero h1 {
-        font-size: 3rem;
-      }
-
-      .hero p {
-        font-size: 1.2rem;
-      }
-
-      .quick-cities {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .analytics-grid,
-      .recommendations-grid,
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .analytics-section,
-      .recommendations-section {
-        padding: 0 1rem;
-      }
     }
 
     /* Modal */
@@ -479,15 +584,15 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: var(--blur);
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: var(--blur-heavy);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 2000;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .modal.active {
@@ -496,19 +601,104 @@
     }
 
     .modal-content {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-large);
       max-width: 800px;
       width: 90%;
       max-height: 80vh;
       overflow-y: auto;
       transform: scale(0.9) translateY(20px);
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      backdrop-filter: var(--blur-heavy);
+      box-shadow: var(--shadow-heavy);
     }
 
     .modal.active .modal-content {
       transform: scale(1) translateY(0);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .loading {
+      animation: pulse 2s infinite;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .nav-content {
+        padding: 1rem;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+      }
+
+      .search-input {
+        font-size: 1.1rem;
+        padding: 1.5rem 3.5rem 1.5rem 1.5rem;
+      }
+
+      .filters {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .destinations-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1rem;
+      }
+
+      .destination-card {
+        height: 420px;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main-content,
+      .analytics-section {
+        padding: 2rem 1rem;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+      }
+
+      .metric-value {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* Hide sections initially */
+    #analyticsSection,
+    #recommendationsSection {
+      display: none;
     }
   </style>
 </head>
@@ -529,40 +719,45 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
-      <h1>AI-Powered Day Trips</h1>
-      <p>Discover perfect destinations from any city • Smart recommendations • Real insights</p>
+      <h1>Discover Amazing Places</h1>
+      <p class="hero-subtitle">AI-powered day trip discovery with intelligent location detection</p>
       
-      <div class="smart-search">
+      <div class="search-section">
         <div class="search-container">
-          <input type="text" class="search-input" placeholder="Enter your city (e.g., Mumbai, Delhi, Bangalore...)" id="cityInput">
+          <input type="text" class="search-input" placeholder="Enter your city or let us detect it..." id="cityInput">
           <button class="search-btn" onclick="searchDestinations()">
             🔍 Discover
           </button>
         </div>
         
-        <div class="quick-cities">
-          <div class="city-pill" onclick="loadCity('Mumbai')">Mumbai</div>
-          <div class="city-pill" onclick="loadCity('Delhi')">Delhi</div>
-          <div class="city-pill" onclick="loadCity('Bangalore')">Bangalore</div>
-          <div class="city-pill" onclick="loadCity('Pune')">Pune</div>
-          <div class="city-pill" onclick="loadCity('Chennai')">Chennai</div>
+        <div class="filters">
+          <div class="filter-pill active" data-filter="all">All Destinations</div>
+          <div class="filter-pill kid-friendly" data-filter="kid-friendly">Family Adventures</div>
+          <div class="filter-pill adventurous" data-filter="adventurous">Thrill Seekers</div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="destinations-grid" id="destinationsGrid">
+      <!-- Destinations will be populated here -->
+    </div>
+  </main>
+
   <!-- Analytics Dashboard -->
-  <section class="analytics-section" id="analyticsSection" style="display: none;">
-    <h2 class="section-title">Travel Intelligence Dashboard</h2>
+  <section class="analytics-section" id="analyticsSection">
+    <h2 class="section-title">Travel Intelligence</h2>
     
     <div class="analytics-grid">
       <div class="analytics-card">
         <div class="card-header">
-          <div class="card-title">Total Destinations</div>
+          <div class="card-title">Destinations</div>
           <div class="card-icon">📍</div>
         </div>
         <div class="metric-value" id="totalDestinations">0</div>
-        <div class="metric-label">Available destinations</div>
+        <div class="metric-label">Available nearby</div>
       </div>
 
       <div class="analytics-card">
@@ -571,7 +766,7 @@
           <div class="card-icon">💰</div>
         </div>
         <div class="metric-value" id="avgCost">₹0</div>
-        <div class="metric-label">Per person estimate</div>
+        <div class="metric-label">Per person</div>
       </div>
 
       <div class="analytics-card">
@@ -580,7 +775,7 @@
           <div class="card-icon">🌤️</div>
         </div>
         <div class="metric-value" id="bestSeason">-</div>
-        <div class="metric-label">Optimal travel time</div>
+        <div class="metric-label">Optimal time</div>
       </div>
 
       <div class="analytics-card">
@@ -589,7 +784,7 @@
           <div class="card-icon">👨‍👩‍👧‍👦</div>
         </div>
         <div class="metric-value" id="familyScore">0%</div>
-        <div class="metric-label">Family-friendly options</div>
+        <div class="metric-label">Family friendly</div>
       </div>
     </div>
 
@@ -599,41 +794,6 @@
 
     <div class="chart-container">
       <canvas id="categoryChart" class="chart-canvas"></canvas>
-    </div>
-  </section>
-
-  <!-- Smart Recommendations -->
-  <section class="recommendations-section" id="recommendationsSection" style="display: none;">
-    <h2 class="section-title">AI-Curated Recommendations</h2>
-    <div class="recommendations-grid" id="recommendationsGrid">
-      <!-- Recommendations will be populated here -->
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="analytics-section">
-    <h2 class="section-title">Smart Features</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🤖</div>
-        <h3>AI Recommendations</h3>
-        <p>Machine learning algorithms analyze your preferences and suggest perfect destinations</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>Smart Analytics</h3>
-        <p>Real-time insights on costs, weather, crowd levels, and optimal timing</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌍</div>
-        <h3>Global Coverage</h3>
-        <p>Support for day trips from any city worldwide with local expertise</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Instant Planning</h3>
-        <p>Generate complete itineraries in seconds with transport and timing</p>
-      </div>
     </div>
   </section>
 
@@ -650,7 +810,7 @@
     let destinations = {};
     let charts = {};
 
-    // Destination database (expandable)
+    // Destination database (fallback data)
     const destinationDatabase = {
       Mumbai: [
         {
@@ -658,13 +818,15 @@
           distance: "83 km",
           time: "2 hours",
           cost: 1500,
-          category: "adventure",
+          category: "hill_station",
           activities: ["trekking", "waterfalls", "caves"],
           season: "monsoon",
           familyFriendly: true,
           aiScore: 95,
           crowdLevel: "medium",
-          bestTime: "6 AM - 6 PM"
+          bestTime: "6 AM - 6 PM",
+          featured: true,
+          icon: "🏔️"
         },
         {
           name: "Alibaug",
@@ -677,20 +839,23 @@
           familyFriendly: true,
           aiScore: 88,
           crowdLevel: "high",
-          bestTime: "8 AM - 7 PM"
+          bestTime: "8 AM - 7 PM",
+          icon: "🏖️"
         },
         {
           name: "Matheran",
           distance: "80 km",
           time: "2 hours",
           cost: 1200,
-          category: "hill station",
+          category: "hill_station",
           activities: ["toy train", "viewpoints", "horseback riding"],
           season: "winter",
           familyFriendly: true,
           aiScore: 92,
           crowdLevel: "medium",
-          bestTime: "sunrise to sunset"
+          bestTime: "sunrise to sunset",
+          featured: true,
+          icon: "🚂"
         }
       ],
       Delhi: [
@@ -704,8 +869,10 @@
           season: "winter",
           familyFriendly: true,
           aiScore: 98,
-          crowdLevel: "very high",
-          bestTime: "sunrise - sunset"
+          crowdLevel: "very_high",
+          bestTime: "sunrise - sunset",
+          featured: true,
+          icon: "🏛️"
         },
         {
           name: "Neemrana",
@@ -718,65 +885,8 @@
           familyFriendly: true,
           aiScore: 87,
           crowdLevel: "medium",
-          bestTime: "10 AM - 6 PM"
-        }
-      ],
-      Bangalore: [
-        {
-          name: "Mysore",
-          distance: "150 km",
-          time: "3 hours",
-          cost: 2000,
-          category: "heritage",
-          activities: ["palace", "gardens", "silk shopping"],
-          season: "winter",
-          familyFriendly: true,
-          aiScore: 90,
-          crowdLevel: "medium",
-          bestTime: "9 AM - 6 PM"
-        },
-        {
-          name: "Coorg",
-          distance: "260 km",
-          time: "5 hours",
-          cost: 3500,
-          category: "hill station",
-          activities: ["coffee estates", "waterfalls", "trekking"],
-          season: "winter",
-          familyFriendly: true,
-          aiScore: 94,
-          crowdLevel: "low",
-          bestTime: "early morning - evening"
-        }
-      ],
-      Pune: [
-        {
-          name: "Lonavala",
-          distance: "65 km",
-          time: "1.5 hours",
-          cost: 1200,
-          category: "hill station",
-          activities: ["caves", "waterfalls", "trekking"],
-          season: "monsoon",
-          familyFriendly: true,
-          aiScore: 91,
-          crowdLevel: "high",
-          bestTime: "morning to evening"
-        }
-      ],
-      Chennai: [
-        {
-          name: "Mahabalipuram",
-          distance: "60 km",
-          time: "1.5 hours",
-          cost: 1000,
-          category: "heritage",
-          activities: ["temples", "beach", "sculptures"],
-          season: "winter",
-          familyFriendly: true,
-          aiScore: 89,
-          crowdLevel: "medium",
-          bestTime: "8 AM - 6 PM"
+          bestTime: "10 AM - 6 PM",
+          icon: "🏰"
         }
       ]
     };
@@ -797,20 +907,22 @@
         
         if (userLocation && userLocation.city) {
           // Auto-populate city input with detected location
-          document.getElementById('cityInput').placeholder = `Detected: ${userLocation.city} (or enter another city)`;
+          document.getElementById('cityInput').placeholder = `Detected: ${userLocation.city} ✨`;
           
           // Auto-load nearby destinations
           console.log('📍 Auto-loading destinations for:', userLocation.city);
           await loadNearbyDestinations();
           
         } else {
-          console.log('📍 Location detection failed, using default');
+          console.log('📍 Location detection failed, loading Mumbai as default');
           document.getElementById('cityInput').placeholder = "Enter your city (e.g., Mumbai, Delhi, Bangalore...)";
+          await loadCity('Mumbai');
         }
         
       } catch (error) {
         console.error('Location initialization failed:', error);
         document.getElementById('cityInput').placeholder = "Enter your city (e.g., Mumbai, Delhi, Bangalore...)";
+        await loadCity('Mumbai');
       }
     }
 
@@ -835,62 +947,21 @@
           // Store and display destinations
           destinations[currentCity] = nearbyDestinations;
           
-          // Get analytics for the area
-          const analyticsData = await window.SmartLocationAPI.getLocationAnalytics 
-            ? await window.SmartLocationAPI.getLocationAnalytics(currentCity.toLowerCase())
-            : null;
-          
-          updateAnalytics(nearbyDestinations, analyticsData);
+          updateAnalytics(nearbyDestinations);
           generateRecommendations(nearbyDestinations);
           showSections();
           
         } else {
           console.log('📍 No nearby destinations found, loading default city data');
-          await loadCity('Mumbai'); // Fallback to Mumbai
+          await loadCity('Mumbai');
         }
         
       } catch (error) {
         console.error('Failed to load nearby destinations:', error);
-        // Fallback to default city
         await loadCity('Mumbai');
       } finally {
         hideLoading();
       }
-    }
-
-    // Setup event listeners
-    function setupEventListeners() {
-      document.getElementById('cityInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          searchDestinations();
-        }
-      });
-
-      // Close modal on outside click
-      document.getElementById('modal').addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
-          closeModal();
-        }
-      });
-      
-      // Listen for location updates from SmartLocationAPI
-      window.addEventListener('locationUpdated', (event) => {
-        console.log('📍 Location updated:', event.detail);
-        
-        // Update placeholder with new location
-        if (event.detail.city) {
-          document.getElementById('cityInput').placeholder = `Detected: ${event.detail.city} (or enter another city)`;
-          
-          // Optionally auto-refresh destinations
-          // loadNearbyDestinations();
-        }
-      });
-    }
-
-    // Search destinations
-    function searchDestinations() {
-      const city = document.getElementById('cityInput').value.trim() || 'Mumbai';
-      loadCity(city);
     }
 
     // Load city data from MongoDB
@@ -898,7 +969,6 @@
       currentCity = city;
       document.getElementById('cityInput').value = city;
       
-      // Show loading state
       showLoading();
       
       try {
@@ -909,19 +979,15 @@
           destinations[city] = cityDestinations;
         } else {
           // Fallback to generated data if no MongoDB data found
-          destinations[city] = generateRandomDestinations(city);
+          destinations[city] = destinationDatabase[city] || generateRandomDestinations(city);
         }
         
-        // Fetch analytics data
-        const analyticsData = await window.SmartTripsAPI.getAnalytics(city.toLowerCase());
-        
-        updateAnalytics(destinations[city], analyticsData);
+        updateAnalytics(destinations[city]);
         generateRecommendations(destinations[city]);
         showSections();
         
       } catch (error) {
         console.error('Failed to load city data:', error);
-        // Fallback to static data
         destinations[city] = destinationDatabase[city] || generateRandomDestinations(city);
         updateAnalytics(destinations[city]);
         generateRecommendations(destinations[city]);
@@ -936,21 +1002,24 @@
       const templates = [
         {
           name: `${city} Hill Station`,
-          category: "hill station",
+          category: "hill_station",
           activities: ["trekking", "viewpoints", "photography"],
-          season: "winter"
+          season: "winter",
+          icon: "🏔️"
         },
         {
           name: `${city} Heritage Site`,
           category: "heritage",
           activities: ["monuments", "museums", "cultural tours"],
-          season: "winter"
+          season: "winter",
+          icon: "🏛️"
         },
         {
           name: `${city} Adventure Park`,
           category: "adventure",
           activities: ["zip lining", "rock climbing", "nature walks"],
-          season: "winter"
+          season: "winter",
+          icon: "🏞️"
         }
       ];
 
@@ -962,8 +1031,84 @@
         familyFriendly: Math.random() > 0.3,
         aiScore: 75 + Math.floor(Math.random() * 20),
         crowdLevel: ["low", "medium", "high"][Math.floor(Math.random() * 3)],
-        bestTime: "9 AM - 6 PM"
+        bestTime: "9 AM - 6 PM",
+        featured: index === 0
       }));
+    }
+
+    // Generate recommendations (Apple TV style cards)
+    function generateRecommendations(cityDestinations) {
+      const grid = document.getElementById('destinationsGrid');
+      grid.innerHTML = '';
+
+      // Sort by AI score
+      const topDestinations = cityDestinations
+        .sort((a, b) => b.aiScore - a.aiScore)
+        .slice(0, 8);
+
+      topDestinations.forEach((dest, index) => {
+        const card = createDestinationCard(dest, index);
+        grid.appendChild(card);
+      });
+    }
+
+    // Create Apple TV style destination card
+    function createDestinationCard(dest, index) {
+      const card = document.createElement('div');
+      card.className = `destination-card fade-in ${dest.featured ? 'featured' : ''}`;
+      card.style.animationDelay = `${index * 0.1}s`;
+
+      card.innerHTML = `
+        <div class="card-image">
+          <div class="card-overlay">
+            ${dest.icon || getIconByCategory(dest.category)}
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="card-header">
+            <h3 class="card-title">${dest.name}</h3>
+            <div class="card-meta">
+              <span>${dest.distance} • ${dest.time}</span>
+              <span style="font-weight: 700; color: var(--accent-green);">₹${dest.cost}</span>
+            </div>
+          </div>
+          <div class="card-tags">
+            <span class="tag">${getCategoryLabel(dest.category)}</span>
+            <span class="tag">${dest.familyFriendly ? 'Family' : 'Adult'}</span>
+            <span class="tag">${dest.aiScore}% Match</span>
+          </div>
+          <button class="card-button" onclick="openDestinationModal('${dest.name}')">
+            Explore Now
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Helper functions
+    function getIconByCategory(category) {
+      const icons = {
+        'hill_station': '🏔️',
+        'beach': '🏖️',
+        'heritage': '🏛️',
+        'adventure': '🏞️',
+        'nature': '🌳',
+        'cultural': '🎭'
+      };
+      return icons[category] || '📍';
+    }
+
+    function getCategoryLabel(category) {
+      const labels = {
+        'hill_station': 'Hill Station',
+        'beach': 'Beach',
+        'heritage': 'Heritage',
+        'adventure': 'Adventure',
+        'nature': 'Nature',
+        'cultural': 'Cultural'
+      };
+      return labels[category] || category;
     }
 
     // Update analytics (MongoDB + fallback)
@@ -971,13 +1116,11 @@
       let totalDest, avgCost, familyPercent, bestSeason;
       
       if (mongoAnalytics && mongoAnalytics.totalDestinations > 0) {
-        // Use MongoDB analytics data
         totalDest = mongoAnalytics.totalDestinations;
         avgCost = mongoAnalytics.avgCost;
         familyPercent = mongoAnalytics.familyScore;
         bestSeason = mongoAnalytics.bestSeason;
       } else {
-        // Calculate from local data
         totalDest = cityDestinations.length;
         avgCost = Math.round(cityDestinations.reduce((sum, dest) => sum + dest.cost, 0) / totalDest);
         familyPercent = Math.round((cityDestinations.filter(dest => dest.familyFriendly).length / totalDest) * 100);
@@ -989,7 +1132,6 @@
       document.getElementById('familyScore').textContent = `${familyPercent}%`;
       document.getElementById('bestSeason').textContent = bestSeason;
 
-      // Update charts
       updateCharts(cityDestinations);
     }
 
@@ -1026,8 +1168,9 @@
           labels: costRanges,
           datasets: [{
             data: costData,
-            backgroundColor: ['#30d158', '#007aff', '#ff9500', '#ff3b30'],
-            borderWidth: 0
+            backgroundColor: ['#32d74b', '#0a84ff', '#ff9f0a', '#ff2d92'],
+            borderWidth: 0,
+            borderRadius: 8
           }]
         },
         options: {
@@ -1038,11 +1181,13 @@
               display: true,
               text: 'Cost Distribution',
               color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
-              font: { size: 16, weight: 'bold' }
+              font: { size: 18, weight: '700' }
             },
             legend: {
               labels: {
-                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                font: { size: 14, weight: '500' },
+                padding: 20
               }
             }
           }
@@ -1064,12 +1209,12 @@
       charts.categoryChart = new Chart(categoryCtx, {
         type: 'bar',
         data: {
-          labels: categories,
+          labels: categories.map(cat => getCategoryLabel(cat)),
           datasets: [{
             label: 'Destinations',
             data: categoryData,
-            backgroundColor: '#007aff',
-            borderRadius: 8,
+            backgroundColor: '#0a84ff',
+            borderRadius: 12,
             borderSkipped: false
           }]
         },
@@ -1081,7 +1226,7 @@
               display: true,
               text: 'Destinations by Category',
               color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
-              font: { size: 16, weight: 'bold' }
+              font: { size: 18, weight: '700' }
             },
             legend: {
               display: false
@@ -1090,18 +1235,20 @@
           scales: {
             x: {
               ticks: {
-                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                font: { size: 12, weight: '500' }
               },
               grid: {
-                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border-subtle')
               }
             },
             y: {
               ticks: {
-                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                font: { size: 12, weight: '500' }
               },
               grid: {
-                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border-subtle')
               }
             }
           }
@@ -1109,118 +1256,58 @@
       });
     }
 
-    // Generate recommendations
-    function generateRecommendations(cityDestinations) {
-      const grid = document.getElementById('recommendationsGrid');
-      grid.innerHTML = '';
-
-      // Sort by AI score
-      const topDestinations = cityDestinations
-        .sort((a, b) => b.aiScore - a.aiScore)
-        .slice(0, 6);
-
-      topDestinations.forEach((dest, index) => {
-        const card = createRecommendationCard(dest, index);
-        grid.appendChild(card);
-      });
-    }
-
-    // Create recommendation card
-    function createRecommendationCard(dest, index) {
-      const card = document.createElement('div');
-      card.className = 'recommendation-card fade-in';
-      card.style.animationDelay = `${index * 0.1}s`;
-
-      const aiInsights = generateAIInsights(dest);
-
-      card.innerHTML = `
-        <div class="rec-header">
-          <h3>${dest.name}</h3>
-          <p>${dest.distance} • ${dest.time}</p>
-          <div class="rec-score">${dest.aiScore}% Match</div>
-        </div>
-        <div class="rec-content">
-          <div class="rec-tags">
-            <span class="tag">${dest.category}</span>
-            <span class="tag">₹${dest.cost}</span>
-            <span class="tag">${dest.familyFriendly ? 'Family' : 'Adult'}</span>
-            <span class="tag">${dest.crowdLevel} crowd</span>
-          </div>
-          <p><strong>Activities:</strong> ${dest.activities.join(', ')}</p>
-          <p><strong>Best Time:</strong> ${dest.bestTime}</p>
-          <div class="ai-insight">
-            <div class="ai-insight-header">
-              🤖 AI Insight
-            </div>
-            <p>${aiInsights}</p>
-          </div>
-        </div>
-      `;
-
-      card.addEventListener('click', () => openDestinationModal(dest));
-      return card;
-    }
-
-    // Generate AI insights
-    function generateAIInsights(dest) {
-      const insights = [
-        `Based on weather patterns, ${dest.season} is optimal for visiting ${dest.name}.`,
-        `${dest.crowdLevel === 'low' ? 'Great for peaceful experiences' : 'Popular destination - book in advance'}.`,
-        `Perfect for ${dest.familyFriendly ? 'family trips with children' : 'adult adventures'}.`,
-        `Cost-effective option at ₹${dest.cost} compared to similar destinations.`
-      ];
-      
-      return insights[Math.floor(Math.random() * insights.length)];
-    }
-
     // Open destination modal
-    function openDestinationModal(dest) {
+    function openDestinationModal(name) {
+      const dest = destinations[currentCity]?.find(d => d.name === name);
+      if (!dest) return;
+
       const modal = document.getElementById('modal');
       const content = document.getElementById('modalContent');
 
       content.innerHTML = `
-        <div style="padding: 2rem;">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+        <div style="padding: 3rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2.5rem;">
             <div>
-              <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">${dest.name}</h2>
-              <p style="color: var(--text-secondary);">${dest.distance} from ${currentCity} • ${dest.time} travel</p>
+              <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.8rem;">${dest.icon || getIconByCategory(dest.category)} ${dest.name}</h2>
+              <p style="color: var(--text-secondary); font-size: 1.2rem; font-weight: 500;">${dest.distance} from ${currentCity} • ${dest.time} travel</p>
             </div>
-            <button onclick="closeModal()" style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; color: var(--text-primary);">✕</button>
+            <button onclick="closeModal()" style="background: var(--surface-hover); border: 1px solid var(--border-subtle); border-radius: 50%; width: 50px; height: 50px; cursor: pointer; color: var(--text-primary); font-size: 1.2rem; transition: all 0.3s ease;">✕</button>
           </div>
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
-              <div style="font-size: 1.5rem; color: var(--accent-blue); font-weight: 600;">₹${dest.cost}</div>
-              <div style="color: var(--text-secondary); font-size: 0.9rem;">Estimated Cost</div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <div style="background: var(--surface-hover); padding: 1.5rem; border-radius: var(--radius-medium); text-align: center;">
+              <div style="font-size: 2rem; color: var(--accent-blue); font-weight: 800; margin-bottom: 0.5rem;">₹${dest.cost}</div>
+              <div style="color: var(--text-secondary); font-size: 1rem; font-weight: 500;">Estimated Cost</div>
             </div>
-            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
-              <div style="font-size: 1.5rem; color: var(--accent-green); font-weight: 600;">${dest.aiScore}%</div>
-              <div style="color: var(--text-secondary); font-size: 0.9rem;">AI Match Score</div>
+            <div style="background: var(--surface-hover); padding: 1.5rem; border-radius: var(--radius-medium); text-align: center;">
+              <div style="font-size: 2rem; color: var(--accent-green); font-weight: 800; margin-bottom: 0.5rem;">${dest.aiScore}%</div>
+              <div style="color: var(--text-secondary); font-size: 1rem; font-weight: 500;">AI Match Score</div>
             </div>
-            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
-              <div style="font-size: 1.5rem; color: var(--accent-orange); font-weight: 600;">${dest.crowdLevel}</div>
-              <div style="color: var(--text-secondary); font-size: 0.9rem;">Crowd Level</div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 2rem;">
-            <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Activities & Attractions</h3>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              ${dest.activities.map(activity => `<span style="background: var(--accent-blue); color: white; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem;">${activity}</span>`).join('')}
+            <div style="background: var(--surface-hover); padding: 1.5rem; border-radius: var(--radius-medium); text-align: center;">
+              <div style="font-size: 2rem; color: var(--accent-orange); font-weight: 800; margin-bottom: 0.5rem;">${dest.crowdLevel}</div>
+              <div style="color: var(--text-secondary); font-size: 1rem; font-weight: 500;">Crowd Level</div>
             </div>
           </div>
 
-          <div style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
-            <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">🤖 Smart Recommendations</h4>
-            <p style="margin-bottom: 1rem;">${generateAIInsights(dest)}</p>
-            <p><strong>Best Time to Visit:</strong> ${dest.bestTime}</p>
-            <p><strong>Ideal Season:</strong> ${dest.season}</p>
-            <p><strong>Family Suitable:</strong> ${dest.familyFriendly ? 'Yes' : 'Adults preferred'}</p>
+          <div style="margin-bottom: 2.5rem;">
+            <h3 style="margin-bottom: 1.2rem; color: var(--accent-blue); font-size: 1.4rem; font-weight: 700;">Activities & Attractions</h3>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              ${dest.activities.map(activity => `<span style="background: var(--accent-blue); color: white; padding: 0.6rem 1.2rem; border-radius: 20px; font-size: 1rem; font-weight: 600;">${activity}</span>`).join('')}
+            </div>
           </div>
 
-          <div style="display: flex; gap: 1rem;">
-            <button onclick="planItinerary('${dest.name}')" style="flex: 1; background: var(--accent-blue); color: white; border: none; padding: 1rem; border-radius: 15px; font-weight: 600; cursor: pointer;">Plan Itinerary</button>
-            <button onclick="shareDestination('${dest.name}')" style="flex: 1; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 1rem; border-radius: 15px; font-weight: 600; cursor: pointer;">Share</button>
+          <div style="background: var(--surface-hover); border: 1px solid var(--border-subtle); border-radius: var(--radius-medium); padding: 2rem; margin-bottom: 2.5rem;">
+            <h4 style="color: var(--accent-purple); margin-bottom: 1rem; font-size: 1.2rem; font-weight: 700;">🤖 Smart Recommendations</h4>
+            <p style="margin-bottom: 1.2rem; font-size: 1.1rem; line-height: 1.6;">Perfect destination for ${dest.familyFriendly ? 'family trips with children' : 'adult adventures'}. Best visited during ${dest.season} season.</p>
+            <p style="margin-bottom: 0.8rem; font-weight: 600;">Best Time to Visit:</p>
+            <p style="margin-bottom: 0.8rem;">${dest.bestTime}</p>
+            <p style="margin-bottom: 0.8rem; font-weight: 600;">Ideal Season:</p>
+            <p>${dest.season}</p>
+          </div>
+
+          <div style="display: flex; gap: 1.2rem;">
+            <button onclick="planItinerary('${dest.name}')" style="flex: 1; background: var(--accent-blue); color: white; border: none; padding: 1.2rem; border-radius: var(--radius-medium); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">Plan Itinerary</button>
+            <button onclick="shareDestination('${dest.name}')" style="flex: 1; background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 1.2rem; border-radius: var(--radius-medium); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">Share</button>
           </div>
         </div>
       `;
@@ -1252,14 +1339,64 @@
       }
     }
 
+    // Search destinations
+    function searchDestinations() {
+      const city = document.getElementById('cityInput').value.trim() || 'Mumbai';
+      loadCity(city);
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById('cityInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchDestinations();
+        }
+      });
+
+      // Filter functionality
+      document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', handleFilter);
+      });
+
+      // Close modal on outside click
+      document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      });
+      
+      // Listen for location updates from SmartLocationAPI
+      window.addEventListener('locationUpdated', (event) => {
+        console.log('📍 Location updated:', event.detail);
+        
+        if (event.detail.city) {
+          document.getElementById('cityInput').placeholder = `Detected: ${event.detail.city} ✨`;
+        }
+      });
+    }
+
+    // Handle filter
+    function handleFilter(e) {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      e.target.classList.add('active');
+
+      const filter = e.target.dataset.filter;
+      const cityDests = destinations[currentCity] || [];
+      const filtered = filter === 'all' ? cityDests : cityDests.filter(dest => {
+        if (filter === 'kid-friendly') return dest.familyFriendly;
+        if (filter === 'adventurous') return !dest.familyFriendly || dest.category === 'adventure';
+        return dest.category === filter;
+      });
+      
+      generateRecommendations(filtered);
+    }
+
     // Show/hide sections
     function showSections() {
       document.getElementById('analyticsSection').style.display = 'block';
-      document.getElementById('recommendationsSection').style.display = 'block';
     }
 
     function showLoading() {
-      // Add loading states to UI elements
       document.querySelectorAll('.metric-value').forEach(el => {
         el.classList.add('loading');
       });
