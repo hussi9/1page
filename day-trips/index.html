@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Day Trips • AI-Powered Travel Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-bg: #000000;
+      --secondary-bg: #1d1d1f;
+      --card-bg: #2c2c2e;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1a6;
+      --accent-blue: #007aff;
+      --accent-green: #30d158;
+      --accent-orange: #ff9500;
+      --accent-purple: #af52de;
+      --accent-red: #ff3b30;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --blur: blur(20px);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f5f5f7;
+      --secondary-bg: #ffffff;
+      --card-bg: #ffffff;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --border-color: rgba(0, 0, 0, 0.1);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --glass-bg: rgba(255, 255, 255, 0.8);
+    }
+
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1000;
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .control-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: var(--blur);
+    }
+
+    .control-btn:hover {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      transform: scale(1.05);
+    }
+
+    /* Hero Section */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 50%, var(--accent-blue) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, var(--accent-purple) 0%, transparent 50%);
+      opacity: 0.1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: fadeInUp 1s ease 0.3s both;
+    }
+
+    .hero p {
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      animation: fadeInUp 1s ease 0.6s both;
+    }
+
+    /* Smart Search */
+    .smart-search {
+      max-width: 800px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 1s ease 0.9s both;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1.5rem 4rem 1.5rem 2rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      backdrop-filter: var(--blur);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+    }
+
+    .search-btn {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent-blue);
+      border: none;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+      background: #005ecb;
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .quick-cities {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .city-pill {
+      padding: 0.75rem 1.5rem;
+      background: var(--glass-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: var(--blur);
+    }
+
+    .city-pill:hover {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      transform: scale(1.1);
+    }
+
+    /* Analytics Dashboard */
+    .analytics-section {
+      max-width: 1400px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 3rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .analytics-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: var(--blur);
+      transition: all 0.3s ease;
+    }
+
+    .analytics-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-canvas {
+      max-height: 400px;
+    }
+
+    /* Smart Recommendations */
+    .recommendations-section {
+      max-width: 1400px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+    }
+
+    .recommendation-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+    }
+
+    .recommendation-card:hover {
+      transform: scale(1.05) translateY(-10px);
+      box-shadow: var(--shadow);
+    }
+
+    .rec-header {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      padding: 1.5rem;
+      color: white;
+      position: relative;
+    }
+
+    .rec-score {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      backdrop-filter: var(--blur);
+    }
+
+    .rec-content {
+      padding: 1.5rem;
+    }
+
+    .rec-tags {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tag {
+      background: var(--glass-bg);
+      color: var(--text-secondary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .ai-insight {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .ai-insight-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-purple);
+      font-weight: 500;
+    }
+
+    /* Interactive Features */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .loading {
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-content {
+        padding: 1rem;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+      }
+
+      .quick-cities {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .analytics-grid,
+      .recommendations-grid,
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analytics-section,
+      .recommendations-section {
+        padding: 0 1rem;
+      }
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: var(--blur);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      max-width: 800px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.3s ease;
+    }
+
+    .modal.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-content">
+      <div class="logo">
+        🧠 Smart Day Trips
+      </div>
+      <div class="nav-controls">
+        <button class="control-btn" onclick="toggleTheme()">🌓</button>
+        <button class="control-btn" onclick="shareApp()">Share</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>AI-Powered Day Trips</h1>
+      <p>Discover perfect destinations from any city • Smart recommendations • Real insights</p>
+      
+      <div class="smart-search">
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="Enter your city (e.g., Mumbai, Delhi, Bangalore...)" id="cityInput">
+          <button class="search-btn" onclick="searchDestinations()">
+            🔍 Discover
+          </button>
+        </div>
+        
+        <div class="quick-cities">
+          <div class="city-pill" onclick="loadCity('Mumbai')">Mumbai</div>
+          <div class="city-pill" onclick="loadCity('Delhi')">Delhi</div>
+          <div class="city-pill" onclick="loadCity('Bangalore')">Bangalore</div>
+          <div class="city-pill" onclick="loadCity('Pune')">Pune</div>
+          <div class="city-pill" onclick="loadCity('Chennai')">Chennai</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics Dashboard -->
+  <section class="analytics-section" id="analyticsSection" style="display: none;">
+    <h2 class="section-title">Travel Intelligence Dashboard</h2>
+    
+    <div class="analytics-grid">
+      <div class="analytics-card">
+        <div class="card-header">
+          <div class="card-title">Total Destinations</div>
+          <div class="card-icon">📍</div>
+        </div>
+        <div class="metric-value" id="totalDestinations">0</div>
+        <div class="metric-label">Available destinations</div>
+      </div>
+
+      <div class="analytics-card">
+        <div class="card-header">
+          <div class="card-title">Average Cost</div>
+          <div class="card-icon">💰</div>
+        </div>
+        <div class="metric-value" id="avgCost">₹0</div>
+        <div class="metric-label">Per person estimate</div>
+      </div>
+
+      <div class="analytics-card">
+        <div class="card-header">
+          <div class="card-title">Best Season</div>
+          <div class="card-icon">🌤️</div>
+        </div>
+        <div class="metric-value" id="bestSeason">-</div>
+        <div class="metric-label">Optimal travel time</div>
+      </div>
+
+      <div class="analytics-card">
+        <div class="card-header">
+          <div class="card-title">Family Score</div>
+          <div class="card-icon">👨‍👩‍👧‍👦</div>
+        </div>
+        <div class="metric-value" id="familyScore">0%</div>
+        <div class="metric-label">Family-friendly options</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="costDistributionChart" class="chart-canvas"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="categoryChart" class="chart-canvas"></canvas>
+    </div>
+  </section>
+
+  <!-- Smart Recommendations -->
+  <section class="recommendations-section" id="recommendationsSection" style="display: none;">
+    <h2 class="section-title">AI-Curated Recommendations</h2>
+    <div class="recommendations-grid" id="recommendationsGrid">
+      <!-- Recommendations will be populated here -->
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="analytics-section">
+    <h2 class="section-title">Smart Features</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Recommendations</h3>
+        <p>Machine learning algorithms analyze your preferences and suggest perfect destinations</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Smart Analytics</h3>
+        <p>Real-time insights on costs, weather, crowd levels, and optimal timing</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>Global Coverage</h3>
+        <p>Support for day trips from any city worldwide with local expertise</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Planning</h3>
+        <p>Generate complete itineraries in seconds with transport and timing</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent">
+      <!-- Modal content will be populated dynamically -->
+    </div>
+  </div>
+
+  <script>
+    // Global data
+    let currentCity = '';
+    let destinations = {};
+    let charts = {};
+
+    // Destination database (expandable)
+    const destinationDatabase = {
+      Mumbai: [
+        {
+          name: "Lonavala",
+          distance: "83 km",
+          time: "2 hours",
+          cost: 1500,
+          category: "adventure",
+          activities: ["trekking", "waterfalls", "caves"],
+          season: "monsoon",
+          familyFriendly: true,
+          aiScore: 95,
+          crowdLevel: "medium",
+          bestTime: "6 AM - 6 PM"
+        },
+        {
+          name: "Alibaug",
+          distance: "95 km",
+          time: "2.5 hours",
+          cost: 2000,
+          category: "beach",
+          activities: ["beach", "water sports", "forts"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 88,
+          crowdLevel: "high",
+          bestTime: "8 AM - 7 PM"
+        },
+        {
+          name: "Matheran",
+          distance: "80 km",
+          time: "2 hours",
+          cost: 1200,
+          category: "hill station",
+          activities: ["toy train", "viewpoints", "horseback riding"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 92,
+          crowdLevel: "medium",
+          bestTime: "sunrise to sunset"
+        }
+      ],
+      Delhi: [
+        {
+          name: "Agra",
+          distance: "200 km",
+          time: "3 hours",
+          cost: 2500,
+          category: "heritage",
+          activities: ["Taj Mahal", "monuments", "shopping"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 98,
+          crowdLevel: "very high",
+          bestTime: "sunrise - sunset"
+        },
+        {
+          name: "Neemrana",
+          distance: "122 km",
+          time: "2 hours",
+          cost: 3000,
+          category: "heritage",
+          activities: ["zip lining", "fort palace", "dining"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 87,
+          crowdLevel: "medium",
+          bestTime: "10 AM - 6 PM"
+        }
+      ],
+      Bangalore: [
+        {
+          name: "Mysore",
+          distance: "150 km",
+          time: "3 hours",
+          cost: 2000,
+          category: "heritage",
+          activities: ["palace", "gardens", "silk shopping"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 90,
+          crowdLevel: "medium",
+          bestTime: "9 AM - 6 PM"
+        },
+        {
+          name: "Coorg",
+          distance: "260 km",
+          time: "5 hours",
+          cost: 3500,
+          category: "hill station",
+          activities: ["coffee estates", "waterfalls", "trekking"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 94,
+          crowdLevel: "low",
+          bestTime: "early morning - evening"
+        }
+      ],
+      Pune: [
+        {
+          name: "Lonavala",
+          distance: "65 km",
+          time: "1.5 hours",
+          cost: 1200,
+          category: "hill station",
+          activities: ["caves", "waterfalls", "trekking"],
+          season: "monsoon",
+          familyFriendly: true,
+          aiScore: 91,
+          crowdLevel: "high",
+          bestTime: "morning to evening"
+        }
+      ],
+      Chennai: [
+        {
+          name: "Mahabalipuram",
+          distance: "60 km",
+          time: "1.5 hours",
+          cost: 1000,
+          category: "heritage",
+          activities: ["temples", "beach", "sculptures"],
+          season: "winter",
+          familyFriendly: true,
+          aiScore: 89,
+          crowdLevel: "medium",
+          bestTime: "8 AM - 6 PM"
+        }
+      ]
+    };
+
+    // Initialize app
+    function init() {
+      setupEventListeners();
+      // Auto-detect location if possible
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(detectCity);
+      }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById('cityInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchDestinations();
+        }
+      });
+
+      // Close modal on outside click
+      document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      });
+    }
+
+    // Detect city (placeholder)
+    function detectCity(position) {
+      // In a real app, you'd use reverse geocoding
+      // For demo, we'll suggest Mumbai as default
+      document.getElementById('cityInput').placeholder = "Detected: Mumbai (or enter your city)";
+    }
+
+    // Search destinations
+    function searchDestinations() {
+      const city = document.getElementById('cityInput').value.trim() || 'Mumbai';
+      loadCity(city);
+    }
+
+    // Load city data
+    function loadCity(city) {
+      currentCity = city;
+      document.getElementById('cityInput').value = city;
+      
+      // Show loading state
+      showLoading();
+      
+      // Simulate API call delay
+      setTimeout(() => {
+        const cityDestinations = destinationDatabase[city] || generateRandomDestinations(city);
+        destinations[city] = cityDestinations;
+        
+        updateAnalytics(cityDestinations);
+        generateRecommendations(cityDestinations);
+        showSections();
+        hideLoading();
+      }, 1500);
+    }
+
+    // Generate random destinations for unknown cities
+    function generateRandomDestinations(city) {
+      const templates = [
+        {
+          name: `${city} Hill Station`,
+          category: "hill station",
+          activities: ["trekking", "viewpoints", "photography"],
+          season: "winter"
+        },
+        {
+          name: `${city} Heritage Site`,
+          category: "heritage",
+          activities: ["monuments", "museums", "cultural tours"],
+          season: "winter"
+        },
+        {
+          name: `${city} Adventure Park`,
+          category: "adventure",
+          activities: ["zip lining", "rock climbing", "nature walks"],
+          season: "winter"
+        }
+      ];
+
+      return templates.map((template, index) => ({
+        ...template,
+        distance: `${50 + index * 30} km`,
+        time: `${1 + index} hours`,
+        cost: 1000 + index * 500,
+        familyFriendly: Math.random() > 0.3,
+        aiScore: 75 + Math.floor(Math.random() * 20),
+        crowdLevel: ["low", "medium", "high"][Math.floor(Math.random() * 3)],
+        bestTime: "9 AM - 6 PM"
+      }));
+    }
+
+    // Update analytics
+    function updateAnalytics(cityDestinations) {
+      const totalDest = cityDestinations.length;
+      const avgCost = Math.round(cityDestinations.reduce((sum, dest) => sum + dest.cost, 0) / totalDest);
+      const familyPercent = Math.round((cityDestinations.filter(dest => dest.familyFriendly).length / totalDest) * 100);
+      const bestSeason = getMostCommonSeason(cityDestinations);
+
+      document.getElementById('totalDestinations').textContent = totalDest;
+      document.getElementById('avgCost').textContent = `₹${avgCost}`;
+      document.getElementById('familyScore').textContent = `${familyPercent}%`;
+      document.getElementById('bestSeason').textContent = bestSeason;
+
+      // Update charts
+      updateCharts(cityDestinations);
+    }
+
+    // Get most common season
+    function getMostCommonSeason(destinations) {
+      const seasons = destinations.map(dest => dest.season);
+      const seasonCount = seasons.reduce((acc, season) => {
+        acc[season] = (acc[season] || 0) + 1;
+        return acc;
+      }, {});
+      return Object.keys(seasonCount).reduce((a, b) => seasonCount[a] > seasonCount[b] ? a : b);
+    }
+
+    // Update charts
+    function updateCharts(cityDestinations) {
+      // Cost distribution chart
+      const costCtx = document.getElementById('costDistributionChart').getContext('2d');
+      
+      if (charts.costChart) {
+        charts.costChart.destroy();
+      }
+
+      const costRanges = ['₹0-1000', '₹1000-2000', '₹2000-3000', '₹3000+'];
+      const costData = [
+        cityDestinations.filter(d => d.cost < 1000).length,
+        cityDestinations.filter(d => d.cost >= 1000 && d.cost < 2000).length,  
+        cityDestinations.filter(d => d.cost >= 2000 && d.cost < 3000).length,
+        cityDestinations.filter(d => d.cost >= 3000).length
+      ];
+
+      charts.costChart = new Chart(costCtx, {
+        type: 'doughnut',
+        data: {
+          labels: costRanges,
+          datasets: [{
+            data: costData,
+            backgroundColor: ['#30d158', '#007aff', '#ff9500', '#ff3b30'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Cost Distribution',
+              color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+              font: { size: 16, weight: 'bold' }
+            },
+            legend: {
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+              }
+            }
+          }
+        }
+      });
+
+      // Category chart
+      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+      
+      if (charts.categoryChart) {
+        charts.categoryChart.destroy();
+      }
+
+      const categories = [...new Set(cityDestinations.map(d => d.category))];
+      const categoryData = categories.map(cat => 
+        cityDestinations.filter(d => d.category === cat).length
+      );
+
+      charts.categoryChart = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [{
+            label: 'Destinations',
+            data: categoryData,
+            backgroundColor: '#007aff',
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Destinations by Category',
+              color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+              font: { size: 16, weight: 'bold' }
+            },
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+              },
+              grid: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+              }
+            },
+            y: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+              },
+              grid: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Generate recommendations
+    function generateRecommendations(cityDestinations) {
+      const grid = document.getElementById('recommendationsGrid');
+      grid.innerHTML = '';
+
+      // Sort by AI score
+      const topDestinations = cityDestinations
+        .sort((a, b) => b.aiScore - a.aiScore)
+        .slice(0, 6);
+
+      topDestinations.forEach((dest, index) => {
+        const card = createRecommendationCard(dest, index);
+        grid.appendChild(card);
+      });
+    }
+
+    // Create recommendation card
+    function createRecommendationCard(dest, index) {
+      const card = document.createElement('div');
+      card.className = 'recommendation-card fade-in';
+      card.style.animationDelay = `${index * 0.1}s`;
+
+      const aiInsights = generateAIInsights(dest);
+
+      card.innerHTML = `
+        <div class="rec-header">
+          <h3>${dest.name}</h3>
+          <p>${dest.distance} • ${dest.time}</p>
+          <div class="rec-score">${dest.aiScore}% Match</div>
+        </div>
+        <div class="rec-content">
+          <div class="rec-tags">
+            <span class="tag">${dest.category}</span>
+            <span class="tag">₹${dest.cost}</span>
+            <span class="tag">${dest.familyFriendly ? 'Family' : 'Adult'}</span>
+            <span class="tag">${dest.crowdLevel} crowd</span>
+          </div>
+          <p><strong>Activities:</strong> ${dest.activities.join(', ')}</p>
+          <p><strong>Best Time:</strong> ${dest.bestTime}</p>
+          <div class="ai-insight">
+            <div class="ai-insight-header">
+              🤖 AI Insight
+            </div>
+            <p>${aiInsights}</p>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => openDestinationModal(dest));
+      return card;
+    }
+
+    // Generate AI insights
+    function generateAIInsights(dest) {
+      const insights = [
+        `Based on weather patterns, ${dest.season} is optimal for visiting ${dest.name}.`,
+        `${dest.crowdLevel === 'low' ? 'Great for peaceful experiences' : 'Popular destination - book in advance'}.`,
+        `Perfect for ${dest.familyFriendly ? 'family trips with children' : 'adult adventures'}.`,
+        `Cost-effective option at ₹${dest.cost} compared to similar destinations.`
+      ];
+      
+      return insights[Math.floor(Math.random() * insights.length)];
+    }
+
+    // Open destination modal
+    function openDestinationModal(dest) {
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+
+      content.innerHTML = `
+        <div style="padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+            <div>
+              <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">${dest.name}</h2>
+              <p style="color: var(--text-secondary);">${dest.distance} from ${currentCity} • ${dest.time} travel</p>
+            </div>
+            <button onclick="closeModal()" style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; color: var(--text-primary);">✕</button>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
+              <div style="font-size: 1.5rem; color: var(--accent-blue); font-weight: 600;">₹${dest.cost}</div>
+              <div style="color: var(--text-secondary); font-size: 0.9rem;">Estimated Cost</div>
+            </div>
+            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
+              <div style="font-size: 1.5rem; color: var(--accent-green); font-weight: 600;">${dest.aiScore}%</div>
+              <div style="color: var(--text-secondary); font-size: 0.9rem;">AI Match Score</div>
+            </div>
+            <div style="background: var(--glass-bg); padding: 1rem; border-radius: 15px; text-align: center;">
+              <div style="font-size: 1.5rem; color: var(--accent-orange); font-weight: 600;">${dest.crowdLevel}</div>
+              <div style="color: var(--text-secondary); font-size: 0.9rem;">Crowd Level</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Activities & Attractions</h3>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              ${dest.activities.map(activity => `<span style="background: var(--accent-blue); color: white; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem;">${activity}</span>`).join('')}
+            </div>
+          </div>
+
+          <div style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">🤖 Smart Recommendations</h4>
+            <p style="margin-bottom: 1rem;">${generateAIInsights(dest)}</p>
+            <p><strong>Best Time to Visit:</strong> ${dest.bestTime}</p>
+            <p><strong>Ideal Season:</strong> ${dest.season}</p>
+            <p><strong>Family Suitable:</strong> ${dest.familyFriendly ? 'Yes' : 'Adults preferred'}</p>
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button onclick="planItinerary('${dest.name}')" style="flex: 1; background: var(--accent-blue); color: white; border: none; padding: 1rem; border-radius: 15px; font-weight: 600; cursor: pointer;">Plan Itinerary</button>
+            <button onclick="shareDestination('${dest.name}')" style="flex: 1; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 1rem; border-radius: 15px; font-weight: 600; cursor: pointer;">Share</button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    // Plan itinerary
+    function planItinerary(destName) {
+      alert(`🗓️ Itinerary planner for ${destName} coming soon! This will include:\n\n• Optimal route planning\n• Time-based schedule\n• Weather forecast\n• Local recommendations\n• Booking assistance`);
+    }
+
+    // Share destination
+    function shareDestination(destName) {
+      if (navigator.share) {
+        navigator.share({
+          title: `Day Trip to ${destName}`,
+          text: `Check out this amazing day trip destination from ${currentCity}!`,
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(`Check out ${destName} - a perfect day trip from ${currentCity}! ${window.location.href}`);
+        alert('📋 Destination details copied to clipboard!');
+      }
+    }
+
+    // Show/hide sections
+    function showSections() {
+      document.getElementById('analyticsSection').style.display = 'block';
+      document.getElementById('recommendationsSection').style.display = 'block';
+    }
+
+    function showLoading() {
+      // Add loading states to UI elements
+      document.querySelectorAll('.metric-value').forEach(el => {
+        el.classList.add('loading');
+      });
+    }
+
+    function hideLoading() {
+      document.querySelectorAll('.metric-value').forEach(el => {
+        el.classList.remove('loading');
+      });
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', newTheme);
+      
+      // Update charts if they exist
+      if (charts.costChart || charts.categoryChart) {
+        setTimeout(() => {
+          if (destinations[currentCity]) {
+            updateCharts(destinations[currentCity]);
+          }
+        }, 100);
+      }
+    }
+
+    // Share app
+    function shareApp() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Smart Day Trips - AI-Powered Travel Discovery',
+          text: 'Discover perfect day trip destinations with AI-powered recommendations!',
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('📋 App link copied to clipboard!');
+      }
+    }
+
+    // Initialize app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
