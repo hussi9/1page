@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="./api-client.js"></script>
   <style>
     * {
       margin: 0;
@@ -817,24 +818,42 @@
       loadCity(city);
     }
 
-    // Load city data
-    function loadCity(city) {
+    // Load city data from MongoDB
+    async function loadCity(city) {
       currentCity = city;
       document.getElementById('cityInput').value = city;
       
       // Show loading state
       showLoading();
       
-      // Simulate API call delay
-      setTimeout(() => {
-        const cityDestinations = destinationDatabase[city] || generateRandomDestinations(city);
-        destinations[city] = cityDestinations;
+      try {
+        // Use MongoDB API to fetch real data
+        const cityDestinations = await window.SmartTripsAPI.getDestinationsByCity(city.toLowerCase());
         
-        updateAnalytics(cityDestinations);
-        generateRecommendations(cityDestinations);
+        if (cityDestinations && cityDestinations.length > 0) {
+          destinations[city] = cityDestinations;
+        } else {
+          // Fallback to generated data if no MongoDB data found
+          destinations[city] = generateRandomDestinations(city);
+        }
+        
+        // Fetch analytics data
+        const analyticsData = await window.SmartTripsAPI.getAnalytics(city.toLowerCase());
+        
+        updateAnalytics(destinations[city], analyticsData);
+        generateRecommendations(destinations[city]);
         showSections();
+        
+      } catch (error) {
+        console.error('Failed to load city data:', error);
+        // Fallback to static data
+        destinations[city] = destinationDatabase[city] || generateRandomDestinations(city);
+        updateAnalytics(destinations[city]);
+        generateRecommendations(destinations[city]);
+        showSections();
+      } finally {
         hideLoading();
-      }, 1500);
+      }
     }
 
     // Generate random destinations for unknown cities
@@ -872,12 +891,23 @@
       }));
     }
 
-    // Update analytics
-    function updateAnalytics(cityDestinations) {
-      const totalDest = cityDestinations.length;
-      const avgCost = Math.round(cityDestinations.reduce((sum, dest) => sum + dest.cost, 0) / totalDest);
-      const familyPercent = Math.round((cityDestinations.filter(dest => dest.familyFriendly).length / totalDest) * 100);
-      const bestSeason = getMostCommonSeason(cityDestinations);
+    // Update analytics (MongoDB + fallback)
+    function updateAnalytics(cityDestinations, mongoAnalytics = null) {
+      let totalDest, avgCost, familyPercent, bestSeason;
+      
+      if (mongoAnalytics && mongoAnalytics.totalDestinations > 0) {
+        // Use MongoDB analytics data
+        totalDest = mongoAnalytics.totalDestinations;
+        avgCost = mongoAnalytics.avgCost;
+        familyPercent = mongoAnalytics.familyScore;
+        bestSeason = mongoAnalytics.bestSeason;
+      } else {
+        // Calculate from local data
+        totalDest = cityDestinations.length;
+        avgCost = Math.round(cityDestinations.reduce((sum, dest) => sum + dest.cost, 0) / totalDest);
+        familyPercent = Math.round((cityDestinations.filter(dest => dest.familyFriendly).length / totalDest) * 100);
+        bestSeason = getMostCommonSeason(cityDestinations);
+      }
 
       document.getElementById('totalDestinations').textContent = totalDest;
       document.getElementById('avgCost').textContent = `₹${avgCost}`;
