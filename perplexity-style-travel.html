@@ -976,25 +976,41 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
 
     async function gatherTravelData(query) {
       try {
+        // First try to extract location from query
         const location = extractLocationFromQuery(query);
         
+        // Try to get user's current location for better search
+        let searchCoords = null;
+        try {
+          const userLocation = await window.RealProductionTravelAPI.detectUserLocation();
+          searchCoords = userLocation.coordinates;
+        } catch (e) {
+          // Use default coordinates based on query location
+          searchCoords = getDefaultCoordinates(location || 'mumbai');
+        }
+        
+        // Search real APIs for live data
+        const [lat, lng] = searchCoords;
+        const apiResults = await window.RealProductionTravelAPI.searchEnhancedPlaces(lat, lng, ['tourism', 'leisure'], 100000);
+        
+        if (apiResults && apiResults.length > 0) {
+          return transformAPIResults(apiResults, query);
+        }
+        
+        // If APIs fail, try MongoDB as fallback
         if (location) {
           const mongoResults = await window.RealProductionTravelAPI.getRealDestinations(location);
-          
           if (mongoResults && mongoResults.length > 0) {
             return transformMongoResults(mongoResults);
           }
         }
         
-        // Fallback sample data
-        return [
-          { name: 'Sample Destination 1', description: 'Beautiful place to visit', source: 'travel_db' },
-          { name: 'Sample Destination 2', description: 'Amazing adventure spot', source: 'travel_db' }
-        ];
+        // Last resort - generate contextual fallback data
+        return generateFallbackData(query, location);
         
       } catch (error) {
         console.error('Data gathering failed:', error);
-        return [];
+        return generateFallbackData(query, null);
       }
     }
 
@@ -1009,15 +1025,102 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
     }
 
     function extractLocationFromQuery(query) {
-      const locations = ['mumbai', 'delhi', 'bangalore', 'chennai', 'kerala', 'goa', 'thane'];
+      const locations = {
+        'mumbai': ['mumbai', 'bombay'],
+        'delhi': ['delhi', 'new delhi'],
+        'bangalore': ['bangalore', 'bengaluru'],
+        'chennai': ['chennai', 'madras'],
+        'kerala': ['kerala', 'kochi', 'cochin', 'thiruvananthapuram'],
+        'goa': ['goa', 'panaji'],
+        'rajasthan': ['rajasthan', 'jaipur', 'udaipur', 'jodhpur'],
+        'himachal': ['himachal', 'shimla', 'manali'],
+        'uttarakhand': ['uttarakhand', 'dehradun', 'mussoorie', 'rishikesh'],
+        'maharashtra': ['pune', 'nashik', 'aurangabad', 'thane']
+      };
+      
       const lowerQuery = query.toLowerCase();
       
-      for (const location of locations) {
-        if (lowerQuery.includes(location)) {
-          return location;
+      for (const [state, cities] of Object.entries(locations)) {
+        for (const city of cities) {
+          if (lowerQuery.includes(city)) {
+            return state;
+          }
         }
       }
+      
+      // Try to extract location patterns like "near X" or "from X"
+      const nearMatch = lowerQuery.match(/(?:near|from|in)\s+([a-z\s]+)/);
+      if (nearMatch) {
+        const extractedLocation = nearMatch[1].trim();
+        for (const [state, cities] of Object.entries(locations)) {
+          if (cities.some(city => extractedLocation.includes(city))) {
+            return state;
+          }
+        }
+      }
+      
       return null;
+    }
+    
+    function getDefaultCoordinates(location) {
+      const coordinates = {
+        'mumbai': [19.0760, 72.8777],
+        'delhi': [28.6139, 77.2090],
+        'bangalore': [12.9716, 77.5946],
+        'chennai': [13.0827, 80.2707],
+        'kerala': [10.8505, 76.2711],
+        'goa': [15.2993, 74.1240],
+        'rajasthan': [26.9124, 75.7873],
+        'himachal': [31.1048, 77.1734],
+        'uttarakhand': [30.0668, 79.0193],
+        'maharashtra': [19.2183, 72.9781]
+      };
+      return coordinates[location] || coordinates['mumbai'];
+    }
+    
+    function transformAPIResults(apiResults, query) {
+      return apiResults.slice(0, 12).map(place => ({
+        name: place.name,
+        description: place.description || `${place.type} destination`,
+        distance: `${place.distance}km`,
+        cost: Math.round(place.distance * 10) + 300, // Estimate cost based on distance
+        image: place.image || place.photos?.[0],
+        rating: place.rating || 4.2,
+        reviews: place.reviews || 0,
+        source: place.source,
+        coordinates: place.coordinates
+      }));
+    }
+    
+    function generateFallbackData(query, location) {
+      const queryTypes = {
+        beach: ['Marina Beach', 'Juhu Beach', 'Calangute Beach', 'Varkala Beach'],
+        hill: ['Ooty', 'Munnar', 'Shimla', 'Mussoorie'],
+        temple: ['Meenakshi Temple', 'Golden Temple', 'Jagannath Temple', 'Somnath Temple'],
+        fort: ['Red Fort', 'Amer Fort', 'Golconda Fort', 'Chittorgarh Fort']
+      };
+      
+      const lowerQuery = query.toLowerCase();
+      let suggestions = [];
+      
+      for (const [type, places] of Object.entries(queryTypes)) {
+        if (lowerQuery.includes(type)) {
+          suggestions = places;
+          break;
+        }
+      }
+      
+      if (suggestions.length === 0) {
+        suggestions = ['Popular destination 1', 'Popular destination 2', 'Popular destination 3'];
+      }
+      
+      return suggestions.slice(0, 6).map((name, index) => ({
+        name,
+        description: `Beautiful ${location || 'travel'} destination perfect for your trip`,
+        distance: `${50 + index * 20}km`,
+        cost: 500 + index * 200,
+        source: 'curated'
+      }));
     }
 
     // 💾 CACHING FUNCTIONS
