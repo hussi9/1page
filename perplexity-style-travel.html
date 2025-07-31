@@ -985,27 +985,27 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
         
         console.log(`📍 Search coordinates: ${lat}, ${lng} (${location || 'default'})`);
         
-        // Try Geoapify Places API directly
-        const geoapifyResults = await searchGeoapifyDirect(lat, lng, query);
-        if (geoapifyResults.length > 0) {
-          console.log(`✅ Found ${geoapifyResults.length} results from Geoapify`);
-          return geoapifyResults;
+        // First try to get intelligent curated results based on query
+        const curatedResults = getCuratedResults(query, location);
+        if (curatedResults.length > 0) {
+          console.log(`✅ Using curated results for "${query}"`);
+          return curatedResults;
         }
         
-        // Fallback to OpenStreetMap 
+        // Try OpenStreetMap for real places
         const osmResults = await searchOpenStreetMapDirect(lat, lng, query);
-        if (osmResults.length > 0) {
+        if (osmResults.length > 0 && osmResults.every(r => r.name !== 'Unnamed Place')) {
           console.log(`✅ Found ${osmResults.length} results from OpenStreetMap`);
           return osmResults;
         }
         
         // Final fallback - generate contextual results
-        console.log(`⚠️ Using fallback data for "${query}"`);
-        return generateFallbackData(query, location);
+        console.log(`⚠️ Using smart fallback data for "${query}"`);
+        return generateSmartFallback(query, location);
         
       } catch (error) {
         console.error('❌ Data gathering failed:', error);
-        return generateFallbackData(query, null);
+        return generateSmartFallback(query, null);
       }
     }
     
@@ -1248,67 +1248,148 @@ Provide a helpful, conversational travel answer in 4-5 sentences. Include specif
       return R * c;
     }
     
-    function generateFallbackData(query, location) {
-      const queryTypes = {
-        beach: [
-          { name: 'Marina Beach', desc: 'Famous beach in Chennai' },
-          { name: 'Juhu Beach', desc: 'Popular Mumbai beach' },
-          { name: 'Calangute Beach', desc: 'Goa\'s most famous beach' },
-          { name: 'Varkala Beach', desc: 'Kerala\'s cliff-top beach' }
+    // COMPREHENSIVE CURATED TRAVEL DATABASE
+    const TRAVEL_DATABASE = {
+      // Hill Stations
+      hill: {
+        'chennai': [
+          { name: 'Ooty', desc: 'Queen of Hill Stations in Nilgiris', distance: 280, cost: 2500, rating: 4.5 },
+          { name: 'Kodaikanal', desc: 'Princess of Hill Stations', distance: 320, cost: 2800, rating: 4.4 },
+          { name: 'Yercaud', desc: 'Jewel of the South', distance: 230, cost: 2200, rating: 4.2 },
+          { name: 'Kotagiri', desc: 'Peaceful tea town', distance: 270, cost: 2400, rating: 4.1 },
+          { name: 'Coonoor', desc: 'Gateway to Nilgiris', distance: 285, cost: 2600, rating: 4.3 }
         ],
-        hill: [
-          { name: 'Ooty', desc: 'Queen of Hill Stations' },
-          { name: 'Munnar', desc: 'Tea garden paradise' },
-          { name: 'Shimla', desc: 'Colonial hill station' },
-          { name: 'Mussoorie', desc: 'Queen of the Hills' }
+        'mumbai': [
+          { name: 'Lonavala', desc: 'Monsoon paradise near Mumbai', distance: 83, cost: 1500, rating: 4.2 },
+          { name: 'Mahabaleshwar', desc: 'Strawberry capital of India', distance: 120, cost: 2000, rating: 4.4 },
+          { name: 'Matheran', desc: 'Car-free hill station', distance: 90, cost: 1800, rating: 4.1 },
+          { name: 'Khandala', desc: 'Twin hill station with Lonavala', distance: 85, cost: 1600, rating: 4.0 },
+          { name: 'Panchgani', desc: 'Table Land hill station', distance: 100, cost: 1900, rating: 4.2 }
         ],
-        temple: [
-          { name: 'Meenakshi Temple', desc: 'Ancient temple in Madurai' },
-          { name: 'Golden Temple', desc: 'Sacred Sikh shrine' },
-          { name: 'Jagannath Temple', desc: 'Famous Puri temple' },
-          { name: 'Somnath Temple', desc: 'Jyotirlinga temple' }
-        ],
-        fort: [
-          { name: 'Red Fort', desc: 'Historic Mughal fort' },
-          { name: 'Amer Fort', desc: 'Rajasthani architecture' },
-          { name: 'Golconda Fort', desc: 'Medieval fort complex' },
-          { name: 'Chittorgarh Fort', desc: 'Largest fort in India' }
+        'delhi': [
+          { name: 'Shimla', desc: 'Colonial hill station capital', distance: 350, cost: 3500, rating: 4.5 },
+          { name: 'Manali', desc: 'Adventure capital of Himachal', distance: 550, cost: 4500, rating: 4.6 },
+          { name: 'Mussoorie', desc: 'Queen of the Hills', distance: 280, cost: 3000, rating: 4.3 },
+          { name: 'Nainital', desc: 'Lake district of India', distance: 320, cost: 3200, rating: 4.4 },
+          { name: 'Kasauli', desc: 'Peaceful cantonment town', distance: 300, cost: 2800, rating: 4.1 }
         ]
-      };
+      },
       
+      // Beaches
+      beach: {
+        'chennai': [
+          { name: 'Marina Beach', desc: 'World\'s second longest beach', distance: 5, cost: 500, rating: 4.0 },
+          { name: 'Pondicherry Beach', desc: 'French colonial seaside', distance: 160, cost: 2000, rating: 4.3 },
+          { name: 'Mahabalipuram Beach', desc: 'UNESCO World Heritage site', distance: 60, cost: 1200, rating: 4.4 },
+          { name: 'Covelong Beach', desc: 'Surfing destination', distance: 40, cost: 1000, rating: 4.1 },
+          { name: 'Kanyakumari Beach', desc: 'Southernmost tip of India', distance: 700, cost: 4000, rating: 4.5 }
+        ],
+        'mumbai': [
+          { name: 'Juhu Beach', desc: 'Bollywood\'s favorite beach', distance: 18, cost: 800, rating: 3.8 },
+          { name: 'Alibag Beach', desc: 'Weekend getaway beach', distance: 95, cost: 1800, rating: 4.2 },
+          { name: 'Kashid Beach', desc: 'White sand paradise', distance: 135, cost: 2200, rating: 4.4 },
+          { name: 'Murud Beach', desc: 'Historic coastal town', distance: 150, cost: 2500, rating: 4.1 },
+          { name: 'Tarkarli Beach', desc: 'Pristine Konkan coast', distance: 460, cost: 4200, rating: 4.6 }
+        ],
+        'kerala': [
+          { name: 'Varkala Beach', desc: 'Cliff-top beach paradise', distance: 50, cost: 1500, rating: 4.5 },
+          { name: 'Kovalam Beach', desc: 'Crescent-shaped beach', distance: 15, cost: 1200, rating: 4.3 },
+          { name: 'Marari Beach', desc: 'Secluded fishing village', distance: 85, cost: 2000, rating: 4.4 },
+          { name: 'Cherai Beach', desc: 'Golden sand beach', distance: 35, cost: 1400, rating: 4.2 },
+          { name: 'Bekal Beach', desc: 'Historic fort beach', distance: 320, cost: 3500, rating: 4.3 }
+        ]
+      },
+      
+      // Weekend Trips
+      weekend: {
+        'delhi': [
+          { name: 'Agra', desc: 'Taj Mahal and Mughal heritage', distance: 230, cost: 2500, rating: 4.7 },
+          { name: 'Jaipur', desc: 'Pink City of Rajasthan', distance: 280, cost: 3000, rating: 4.5 },
+          { name: 'Rishikesh', desc: 'Yoga capital of the world', distance: 240, cost: 2200, rating: 4.4 },
+          { name: 'Jim Corbett', desc: 'Tiger reserve national park', distance: 160, cost: 3500, rating: 4.3 },
+          { name: 'Amritsar', desc: 'Golden Temple city', distance: 450, cost: 4000, rating: 4.6 }
+        ],
+        'mumbai': [
+          { name: 'Goa', desc: 'Beach capital of India', distance: 470, cost: 4500, rating: 4.5 },
+          { name: 'Pune', desc: 'Cultural capital of Maharashtra', distance: 150, cost: 1800, rating: 4.1 },
+          { name: 'Nashik', desc: 'Wine country of India', distance: 180, cost: 2200, rating: 4.2 },
+          { name: 'Aurangabad', desc: 'Ajanta and Ellora caves', distance: 350, cost: 3200, rating: 4.4 },
+          { name: 'Udaipur', desc: 'City of Lakes', distance: 650, cost: 5000, rating: 4.6 }
+        ]
+      },
+      
+      // Family Places
+      family: {
+        'kerala': [
+          { name: 'Munnar', desc: 'Tea plantation hills', distance: 130, cost: 2800, rating: 4.5 },
+          { name: 'Alleppey Backwaters', desc: 'Houseboat experience', distance: 65, cost: 3500, rating: 4.6 },
+          { name: 'Thekkady', desc: 'Periyar wildlife sanctuary', distance: 190, cost: 2500, rating: 4.3 },
+          { name: 'Wayanad', desc: 'Hill station with waterfalls', distance: 76, cost: 2200, rating: 4.4 },
+          { name: 'Kumarakom', desc: 'Bird sanctuary backwaters', distance: 85, cost: 3000, rating: 4.2 }
+        ],
+        'mumbai': [
+          { name: 'Imagica Theme Park', desc: 'Adventure theme park', distance: 76, cost: 2500, rating: 4.2 },
+          { name: 'Lavasa', desc: 'Planned hill city', distance: 65, cost: 2000, rating: 4.0 },
+          { name: 'Sinhagad Fort', desc: 'Historic fort near Pune', distance: 170, cost: 1500, rating: 4.1 },
+          { name: 'Della Adventure Park', desc: 'Adventure activities', distance: 85, cost: 2200, rating: 4.2 },
+          { name: 'Rajmachi Fort', desc: 'Trekking destination', distance: 95, cost: 1800, rating: 4.3 }
+        ]
+      }
+    };
+    
+    function getCuratedResults(query, location) {
       const lowerQuery = query.toLowerCase();
-      let suggestions = [];
       
-      for (const [type, places] of Object.entries(queryTypes)) {
-        if (lowerQuery.includes(type)) {
-          suggestions = places;
-          break;
+      // Determine query type and location
+      let queryType = null;
+      let searchLocation = location || 'mumbai';
+      
+      if (lowerQuery.includes('hill') || lowerQuery.includes('mountain')) queryType = 'hill';
+      else if (lowerQuery.includes('beach')) queryType = 'beach';
+      else if (lowerQuery.includes('weekend')) queryType = 'weekend';
+      else if (lowerQuery.includes('family')) queryType = 'family';
+      
+      // Get results from database
+      if (queryType && TRAVEL_DATABASE[queryType] && TRAVEL_DATABASE[queryType][searchLocation]) {
+        return TRAVEL_DATABASE[queryType][searchLocation].map(place => ({
+          name: place.name,
+          description: place.desc,
+          distance: `${place.distance}km`,
+          cost: place.cost,
+          rating: place.rating,
+          source: 'curated_database'
+        }));
+      }
+      
+      // Fallback to general location-based results
+      const allResults = [];
+      Object.values(TRAVEL_DATABASE).forEach(category => {
+        if (category[searchLocation]) {
+          allResults.push(...category[searchLocation]);
         }
+      });
+      
+      if (allResults.length > 0) {
+        return allResults.slice(0, 6).map(place => ({
+          name: place.name,
+          description: place.desc,
+          distance: `${place.distance}km`,
+          cost: place.cost,
+          rating: place.rating,
+          source: 'curated_database'
+        }));
       }
       
-      if (suggestions.length === 0) {
-        // Location-based fallback
-        const locationData = {
-          'kerala': [{ name: 'Backwaters', desc: 'Serene waterways' }, { name: 'Hill Stations', desc: 'Misty mountains' }],
-          'goa': [{ name: 'Beaches', desc: 'Golden sandy beaches' }, { name: 'Churches', desc: 'Portuguese architecture' }],
-          'rajasthan': [{ name: 'Palaces', desc: 'Royal heritage' }, { name: 'Desert', desc: 'Thar desert experience' }]
-        };
-        
-        suggestions = locationData[location] || [
-          { name: 'Popular Destination 1', desc: 'Great place to visit' },
-          { name: 'Popular Destination 2', desc: 'Amazing travel spot' },
-          { name: 'Popular Destination 3', desc: 'Must-see location' }
-        ];
-      }
-      
-      return suggestions.slice(0, 6).map((item, index) => ({
-        name: item.name,
-        description: item.desc,
-        distance: `${50 + index * 25}km`,
-        cost: 500 + index * 300,
-        rating: 4.0 + Math.random() * 0.8,
-        source: 'curated'
-      }));
+      return [];
+    }
+    
+    function generateSmartFallback(query, location) {
+      // This should never be called now, but keeping as final safety net
+      return getCuratedResults(query, location) || [
+        { name: 'Mumbai', description: 'Financial capital of India', distance: '0km', cost: 1000, rating: 4.2, source: 'fallback' },
+        { name: 'Delhi', description: 'Capital city of India', distance: '100km', cost: 1500, rating: 4.1, source: 'fallback' },
+        { name: 'Bangalore', description: 'Silicon Valley of India', distance: '200km', cost: 2000, rating: 4.3, source: 'fallback' }
+      ];
     }
 
     // 💾 CACHING FUNCTIONS
