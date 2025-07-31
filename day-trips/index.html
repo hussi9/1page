@@ -174,11 +174,23 @@
       margin-right: auto;
     }
 
-    /* Search Section - Instant Search */
+    /* Best-in-Class Search Experience */
     .search-section {
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto 2rem;
       position: relative;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Search States */
+    .search-section.search-active {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      max-width: 90vw;
+      width: 600px;
     }
 
     .search-container {
@@ -188,39 +200,149 @@
 
     .search-input {
       width: 100%;
-      padding: 1rem 3.5rem 1rem 1rem;
+      padding: 1.25rem 4rem 1.25rem 1.5rem;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-large);
+      border: 2px solid var(--border);
+      border-radius: 50px;
       color: var(--text-primary);
-      font-size: 1rem;
+      font-size: 1.125rem;
       font-weight: 400;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .search-results-count {
-      position: absolute;
-      top: -2rem;
-      left: 0;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .search-results-count.show {
-      opacity: 1;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
     .search-input:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.15);
+      transform: translateY(-2px);
     }
 
     .search-input::placeholder {
       color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    /* Search Icon */
+    .search-icon {
+      position: absolute;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus + .search-icon {
+      color: var(--accent);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Search Results Counter */
+    .search-results-counter {
+      position: absolute;
+      top: -2.5rem;
+      left: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .search-results-counter.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Search Backdrop */
+    .search-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    .search-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hero Fade Out */
+    .hero.search-active {
+      opacity: 0.3;
+      transform: translateY(-20px);
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Results Section - Focus Mode */
+    .main-content {
+      padding-top: 2rem;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-active ~ .main-content {
+      padding-top: 8rem;
+      margin-top: 0;
+    }
+
+    /* Enhanced Results Grid */
+    .destinations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+      padding: 2rem 0;
+    }
+
+    /* Results Enter Animation */
+    .destination-card {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideInUp 0.4s ease forwards;
+    }
+
+    .destination-card:nth-child(1) { animation-delay: 0.1s; }
+    .destination-card:nth-child(2) { animation-delay: 0.2s; }
+    .destination-card:nth-child(3) { animation-delay: 0.3s; }
+    .destination-card:nth-child(4) { animation-delay: 0.4s; }
+    .destination-card:nth-child(5) { animation-delay: 0.5s; }
+    .destination-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes slideInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Search No Results */
+    .no-results {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-secondary);
+    }
+
+    .no-results h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .no-results p {
+      font-size: 1rem;
+      max-width: 400px;
+      margin: 0 auto;
     }
 
     .search-btn {
@@ -1258,20 +1380,21 @@
     </div>
   </nav>
 
+  <!-- Search Backdrop -->
+  <div class="search-backdrop" id="searchBackdrop"></div>
+
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" id="heroSection">
     <div class="hero-content">
       <h1>Find Your Perfect Day Trip</h1>
       <p class="hero-subtitle">Discover amazing places near you • Real destinations • Real experiences</p>
       <div id="locationStatus" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 1rem; opacity: 0; transition: opacity 0.3s ease;"></div>
       
-      <div class="search-section">
+      <div class="search-section" id="searchSection">
         <div class="search-container">
-          <div class="search-results-count" id="searchResultsCount"></div>
-          <input type="text" class="search-input" placeholder="Where do you want to go? (e.g., Mumbai, Delhi, Bangalore)" id="cityInput">
-          <button class="search-btn" onclick="searchDestinations()">
-            🔍 Discover
-          </button>
+          <div class="search-results-counter" id="searchResultsCounter"></div>
+          <input type="text" class="search-input" placeholder="Where do you want to go?" id="cityInput">
+          <div class="search-icon">🔍</div>
         </div>
         
         <div class="filters">
@@ -1888,14 +2011,144 @@
       }
     }
 
-    // Handle search input
-    function handleSearchInput(event) {
-      const query = event.target.value.trim();
-      if (query.length > 2) {
-        performSearch(query);
-      } else if (query.length === 0) {
-        displayDestinations(realDestinations);
+    // ✨ BEST-IN-CLASS SEARCH EXPERIENCE ✨
+    let searchTimeout;
+    let isSearchActive = false;
+
+    // Initialize world-class search
+    function initializeSearch() {
+      const searchInput = document.getElementById('cityInput');
+      const searchSection = document.getElementById('searchSection');
+      const heroSection = document.getElementById('heroSection');
+      const searchBackdrop = document.getElementById('searchBackdrop');
+      const searchCounter = document.getElementById('searchResultsCounter');
+
+      if (!searchInput) return;
+
+      // Focus event - activate search mode
+      searchInput.addEventListener('focus', () => {
+        activateSearchMode();
+      });
+
+      // Input event - instant search with debouncing
+      searchInput.addEventListener('input', (e) => {
+        handleInstantSearch(e.target.value);
+      });
+
+      // Blur event - but only if clicking outside
+      searchInput.addEventListener('blur', (e) => {
+        setTimeout(() => {
+          if (!searchInput.matches(':focus')) {
+            deactivateSearchMode();
+          }
+        }, 150);
+      });
+
+      // Backdrop click - exit search mode
+      searchBackdrop.addEventListener('click', () => {
+        deactivateSearchMode();
+        searchInput.blur();
+      });
+
+      // Escape key - exit search mode
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isSearchActive) {
+          deactivateSearchMode();
+          searchInput.blur();
+        }
+      });
+    }
+
+    // Activate Google/Airbnb-style search mode
+    function activateSearchMode() {
+      if (isSearchActive) return;
+      
+      isSearchActive = true;
+      const searchSection = document.getElementById('searchSection');
+      const heroSection = document.getElementById('heroSection');
+      const searchBackdrop = document.getElementById('searchBackdrop');
+
+      // Smooth animations
+      searchSection.classList.add('search-active');
+      heroSection.classList.add('search-active');
+      searchBackdrop.classList.add('active');
+
+      // Show search counter
+      updateSearchCounter(realDestinations.length);
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+      
+      console.log('🔍 Search mode activated');
+    }
+
+    // Deactivate search mode
+    function deactivateSearchMode() {
+      if (!isSearchActive) return;
+      
+      isSearchActive = false;
+      const searchSection = document.getElementById('searchSection');
+      const heroSection = document.getElementById('heroSection');
+      const searchBackdrop = document.getElementById('searchBackdrop');
+      const searchCounter = document.getElementById('searchResultsCounter');
+
+      // Remove active states
+      searchSection.classList.remove('search-active');
+      heroSection.classList.remove('search-active');
+      searchBackdrop.classList.remove('active');
+      searchCounter.classList.remove('show');
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+      
+      console.log('🔍 Search mode deactivated');
+    }
+
+    // Instant search with debouncing
+    function handleInstantSearch(query) {
+      clearTimeout(searchTimeout);
+      
+      searchTimeout = setTimeout(() => {
+        if (query.trim()) {
+          performInstantSearch(query.trim());
+        } else {
+          displayDestinations(realDestinations);
+          updateSearchCounter(realDestinations.length);
+        }
+      }, 300); // 300ms debounce for smooth UX
+    }
+
+    // Perform instant search
+    function performInstantSearch(query) {
+      const results = realDestinations.filter(dest => 
+        dest.name.toLowerCase().includes(query.toLowerCase()) ||
+        dest.description.toLowerCase().includes(query.toLowerCase()) ||
+        dest.category.toLowerCase().includes(query.toLowerCase()) ||
+        dest.activities.some(activity => 
+          activity.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+      
+      displayDestinations(results);
+      updateSearchCounter(results.length, query);
+      
+      console.log(`🔍 Found ${results.length} results for "${query}"`);
+    }
+
+    // Update search results counter
+    function updateSearchCounter(count, query = '') {
+      const counter = document.getElementById('searchResultsCounter');
+      if (!counter) return;
+      
+      if (count === 0 && query) {
+        counter.textContent = `No results for "${query}"`;
+      } else if (query) {
+        counter.textContent = `${count} result${count !== 1 ? 's' : ''} for "${query}"`;
+      } else {
+        counter.textContent = `${count} destination${count !== 1 ? 's' : ''} available`;
       }
+      
+      counter.classList.add('show');
     }
 
     // Handle filter button clicks
